@@ -1,0 +1,16 @@
+[
+    {
+        "id": "1",
+        "title": "Einführung in die Webentwicklung",
+        "type": "Kurs",
+        "authorId": "a1b2c3d4",
+        "url": "http://example.com/webdev"
+    },
+    {
+        "id": "2",
+        "title": "Express.js-Tutorial",
+        "type": "Video",
+        "authorId": "a1b2c3d4",
+        "url": "http://example.com/expressjs"
+    }
+]
