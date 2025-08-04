@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "ressource_catalog_service",
   "version": "1.0.0",
   "description": "Ressource Catalog Microservice for Learning Path Generator App",
