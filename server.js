@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const app = express();
+app.use(express.json());
 
 const port = 5002;
 const __filename = fileURLToPath(import.meta.url);
