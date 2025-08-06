@@ -1,10 +1,11 @@
 [
   {
     "id": "1",
-    "title": "Einführung in die Webentwicklung",
+    "title": "Grundlagen der Webentwicklung.",
     "type": "Kurs",
     "authorId": "a1b2c3d4",
-    "url": "http://example.com/webdev"
+    "url": "http://example.com/webdev",
+    "desciption": "In diesem Kurs lernt man die Grundlagen der Webentwicklung."
   },
   {
     "id": "2",
