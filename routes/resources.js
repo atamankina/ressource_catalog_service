@@ -12,19 +12,20 @@ const __dirname = path.dirname(__filename);
 const data_file = path.join(__dirname, '../data', 'resources.json');
 
 
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
     try {
         const data = readFileSync(data_file, 'utf8');
         const resources = JSON.parse(data);
         res.json(resources);
     } catch (error) {
-        res.status(500).json({ error: 'Interner Serverfehler beim Laden der Ressourcen-Daten.' });
+        next(error);
     }
 });
 
 
-router.get('/:id', (req, res) => {
+router.get('/:id', (req, res, next) => {
     try {
+        // hier wird die ID aus der Anfrage ausgelesen und in der Konstante gespeichert, weiter wird diese ID fuer die Suche benutzt
         const resourceId = req.params.id;
         const data = readFileSync(data_file, 'utf8');
         const resources = JSON.parse(data);
@@ -37,12 +38,12 @@ router.get('/:id', (req, res) => {
         }
 
     } catch (error) {
-        res.status(500).json({ error: 'Interner Serverfehler beim Laden der Ressourcen-Daten.' });
+        next(error);
     }
 });
 
 
-router.post('/', (req, res) => {
+router.post('/', (req, res, next) => {
     const newData = req.body;
 
     if (!newData.title || !newData.type) {
@@ -68,13 +69,13 @@ router.post('/', (req, res) => {
         // 5. Antwort schicken.
         res.status(201).json(newResource);
     } catch (error) {
-        res.status(500).json({ error: 'Interner Serverfehler bei der Verarbeitung der Ressourcen-Daten.' });
+        next(error);
     }
 
 });
 
 
-router.put('/:id', (req, res) => {
+router.put('/:id', (req, res, next) => {
     // 1. ID auslesen
     const resourceId = req.params.id;
     const newData = req.body; 
@@ -108,9 +109,8 @@ router.put('/:id', (req, res) => {
         res.status(200).json(resources[resourceIndex]);
 
     } catch(error) {
-        res.status(500).json({ error: 'Interner Serverfehler bei der Verarbeitung der Ressourcen-Daten.' });
+        next(error);
     }
-
 });
 
 
