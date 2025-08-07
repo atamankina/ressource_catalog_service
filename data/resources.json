@@ -31,17 +31,5 @@
     "title": "Einführung in Python",
     "type": "Kurs",
     "url": "http://example.com/python"
-  },
-  {
-    "id": "c725348d-382d-47cb-964f-294edeb0839f",
-    "title": "Einführung in Python",
-    "type": "Kurs",
-    "url": "http://example.com/python"
-  },
-  {
-    "id": "efe02000-7c99-4091-a1a3-3a982b8da8a6",
-    "title": "Einführung in Python",
-    "type": "Kurs",
-    "url": "http://example.com/python"
   }
 ]
