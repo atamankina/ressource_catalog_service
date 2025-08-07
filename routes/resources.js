@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
+import { validateResource } from '../middleware/validation.js';
 
 const router = express.Router();
 
@@ -52,13 +53,8 @@ router.get('/:id', (req, res, next) => {
 });
 
 
-router.post('/', (req, res, next) => {
+router.post('/', validateResource, (req, res, next) => {
     const newData = req.body;
-
-    if (!newData.title || !newData.type) {
-        res.status(400).json({ error: 'title und type sind erforderlich.' });
-        return;
-    }
 
     // 1. Neues Resource Objekt
 

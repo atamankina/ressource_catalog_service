@@ -194,7 +194,7 @@ Obwohl wir bereits eine grundlegende Validierung im `POST`-Endpunkt haben, ist 
 1. Passe den `router.post`Endpunkt an, indem du die Middleware als zweiten Parameter hinzufügst:
     
     ```jsx
-    router.post('/', validateResource, (req, res) => {
+    router.post('/', validateResource, (req, res, next) => {
     
     ```
     
@@ -202,7 +202,7 @@ Obwohl wir bereits eine grundlegende Validierung im `POST`-Endpunkt haben, ist 
 1. **Lösche die alte Validierungslogik** aus dem `router.post`Handler, da sie nun von der Middleware übernommen wird.
     
     ```jsx
-    router.post('/', validateResource, (req, res) => {
+    router.post('/', validateResource, (req, res, next) => {
         const newResourceData = req.body;
     
         // --- Diese Zeilen löschen ---
