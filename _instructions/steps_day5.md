@@ -239,7 +239,6 @@ Jedes gute Projekt benötigt eine Dokumentation, die erklärt, wie man es instal
     
     ```
     
-    ```
     
 
 **Manuelle Tests für Ticket RC-013**
