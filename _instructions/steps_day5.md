@@ -66,6 +66,12 @@ Um sicherzustellen, dass die `.env`-Datei nicht versehentlich in Git hochgelade
     
 - `process.env.PORT`: Greift auf den Wert der Umgebungsvariable `PORT` zu, die wir in der `.env`Datei definiert haben.
 - `|| 5002`: Dies ist der logische **OR-Operator**. Wenn `process.env.PORT` aus irgendeinem Grund nicht definiert ist, wird der Fallback-Wert `5002` verwendet. Das macht den Code robuster.
+2. Passe den Server-Start-Code an, um die Umgebungsvariable zu benutzen (ersetze `port` mit `PORT`):
+```
+app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+});
+```
 
 **Manuelle Tests für Ticket RC-011**
 

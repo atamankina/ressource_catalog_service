@@ -1,8 +1,9 @@
 import express from 'express';
 import resourcesRouter from './routes/resources.js';
 import { errorHandler } from './middleware/error-handler.js';
+import 'dotenv/config';
 
-const port = 5002;
+const PORT = process.env.PORT || 5002;
 
 const app = express();
 
@@ -16,6 +17,6 @@ app.use('/resources', resourcesRouter);
 app.use(errorHandler);
 
 
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
 });
