@@ -18,7 +18,7 @@ Das Ziel dieses Tickets ist es, den `/resources`-Endpunkt zu erweitern, sodass 
 3. Passe den Code im `try`Block an, um die Query-Parameter zu lesen und die Filterlogik zu implementieren.
     
     ```jsx
-    router.get('/', (req, res) => {
+    router.get('/', (req, res, next) => {
         try {
             const data = fs.readFileSync(DATA_FILE, 'utf-8');
             let resources = JSON.parse(data);
