@@ -15,7 +15,16 @@ const data_file = path.join(__dirname, '../data', 'resources.json');
 router.get('/', (req, res, next) => {
     try {
         const data = readFileSync(data_file, 'utf8');
-        const resources = JSON.parse(data);
+        let resources = JSON.parse(data);
+        const { type, authorId } = req.query;
+
+        if (type) {
+            resources = resources.filter(r => r.type === type);
+        }
+
+        if (authorId) {
+            resources = resources.filter(r => r.authorId === authorId);
+        }
         res.json(resources);
     } catch (error) {
         next(error);
