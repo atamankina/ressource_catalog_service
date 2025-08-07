@@ -126,7 +126,7 @@ npm install cors
     
 - **`app.use(cors())`**: Dies fügt die `cors`Middleware zur Express-Pipeline hinzu. In ihrer Standardkonfiguration erlaubt sie Anfragen von **allen Origins ()**. Für eine Produktionsanwendung sollte man dies auf eine spezifische Liste von erlaubten Domains beschränken.
 
-**Manuelle Tests für Ticket RC-012**
+**Manuelle Tests für Ticket RC-011-1**
 
 1. **Stoppe den Server und starte ihn neu:**
     
