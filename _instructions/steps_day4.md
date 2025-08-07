@@ -63,8 +63,7 @@ Das Ziel dieses Tickets ist es, den `/resources`-Endpunkt zu erweitern, sodass 
     
     ```jsx
         } catch (error) {
-            console.error('Fehler beim Laden der Ressourcen:', error);
-            res.status(500).json({ error: 'Interner Serverfehler beim Laden der Daten' });
+            next(error)
         }
     });
     
