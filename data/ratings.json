@@ -1,0 +1,23 @@
+[
+  {
+    "id": "74e6d0c8-52dd-4105-9ed9-fb9b74538c5f",
+    "resourceId": "1",
+    "ratingValue": 5,
+    "userId": "user_abc",
+    "timestamp": "2025-08-07T15:12:45.556Z"
+  },
+  {
+    "id": "5f4b1cb0-ac4c-4e6d-85eb-a17ece8aa004",
+    "resourceId": "1",
+    "ratingValue": 4,
+    "userId": "anonymous",
+    "timestamp": "2025-08-07T15:20:10.699Z"
+  },
+  {
+    "id": "0239e42a-8bc7-4532-999a-08cbaef07614",
+    "resourceId": "2",
+    "ratingValue": 3,
+    "userId": "user_xyz",
+    "timestamp": "2025-08-07T15:20:19.345Z"
+  }
+]
