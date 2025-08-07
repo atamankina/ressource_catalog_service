@@ -245,7 +245,7 @@ Jetzt laden wir die Daten, finden die Ressource, entfernen sie und schreiben die
     
     ```
 
-### Ticket RC-010: Globale Fehler-Handling-Middleware
+### Ticket RC-008: Globale Fehler-Handling-Middleware
 
 Die Fehlerbehandlung in unserem Code ist aktuell verstreut in den `try...catch`-Blöcken. Eine bessere Praxis ist es, eine zentrale Middleware zu erstellen, die alle Fehler abfängt und konsistent behandelt.
 

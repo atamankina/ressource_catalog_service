@@ -86,7 +86,7 @@ Um sicherzustellen, dass die `.env`-Datei nicht versehentlich in Git hochgelade
     ```
     
 
-### Ticket RC-012: CORS-Middleware implementieren
+### Ticket RC-011-1: CORS-Middleware implementieren
 
 Das Ziel dieses Tickets ist es, eine Middleware zu implementieren, die es einem Frontend, das auf einer anderen Domain läuft, erlaubt, auf unsere API zuzugreifen.
 

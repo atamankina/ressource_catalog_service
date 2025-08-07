@@ -117,7 +117,7 @@ Das Ziel dieses Tickets ist es, den `/resources`-Endpunkt zu erweitern, sodass 
     ```
     
 
-### Ticket RC-009: Eigene Middleware zur Validierung erstellen
+### Ticket RC-009-1: Eigene Middleware zur Validierung erstellen
 
 Obwohl wir bereits eine grundlegende Validierung im `POST`-Endpunkt haben, ist es gute Praxis, die Validierungslogik in eine wiederverwendbare **Middleware-Funktion** auszulagern.
 
