@@ -1,52 +1,46 @@
 import express from 'express';
-import { readFileSync, writeFileSync } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import { validateResource } from '../middleware/validation.js';
+import { readData, writeData } from '../helpers/data_manager.js';
 
 const router = express.Router();
 
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const DATA_FILE = path.join(__dirname, '../data', 'resources.json');
-const RATINGS_FILE = path.join(__dirname, '../data', 'ratings.json');
-const FEEDBACK_FILE = path.join(__dirname, '../data', 'feedback.json');
+const RESOURCES_FILE = 'resources.json';
+const RATINGS_FILE = 'ratings.json';
+const FEEDBACK_FILE = 'feedback.json';
 
 
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
     try {
-        const data = readFileSync(DATA_FILE, 'utf8');
-        let resources = JSON.parse(data);
+        const resources = await readData(RESOURCES_FILE);
         const { type, authorId } = req.query;
+        
+        let filteredResources = resources;
 
         if (type) {
-            resources = resources.filter(r => r.type === type);
+            filteredResources = resources.filter(r => r.type === type);
         }
 
         if (authorId) {
-            resources = resources.filter(r => r.authorId === authorId);
+            filteredResources = resources.filter(r => r.authorId === authorId);
         }
-        res.json(resources);
+
+        res.json(filteredResources);
     } catch (error) {
         next(error);
     }
 });
 
 
-router.get('/:id', (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
     try {
-        // hier wird die ID aus der Anfrage ausgelesen und in der Konstante gespeichert, weiter wird diese ID fuer die Suche benutzt
         const resourceId = req.params.id;
-
-        const data = readFileSync(DATA_FILE, 'utf8');
-        const resources = JSON.parse(data);
+        const resources = await readData(RESOURCES_FILE);
+        const ratings = await readData(RATINGS_FILE);
+        
         const resource = resources.find(r => r.id === resourceId);
-
-        const ratingsData = readFileSync(RATINGS_FILE, 'utf8');
-        const allRatings = JSON.parse(ratingsData);
-        const resourceRatings = allRatings.filter(rating => rating.resourceId === resourceId);
+        const resourceRatings = ratings.filter(rating => rating.resourceId === resourceId);
 
         let averageRating = 0;
         if (resourceRatings.length > 0) {
@@ -58,39 +52,30 @@ router.get('/:id', (req, res, next) => {
             resource.averageRating = averageRating;
             res.json(resource);
         } else {
-            res.status(404).json({ error: `Ressource mit ID ${resourceId} nicht gefunden.` })
+            res.status(404).json({ error: `Ressource mit ID ${resourceId} nicht gefunden.` });
         }
-
     } catch (error) {
         next(error);
     }
 });
 
 
-router.post('/', validateResource, (req, res, next) => {
-    const newData = req.body;
-
-    // 1. Neues Resource Objekt
-
+router.post('/', validateResource, async (req, res, next) => {
+    const newResourceData = req.body;
     const newResource = {
         id: uuidv4(),
-        ...newData
+        ...newResourceData,
+        createdAt: formatISO(new Date())
     }
 
     try {
-        // 2. Vorhandene Daten aus der Datei lesen und in einem Array speichern.
-        const data = readFileSync(DATA_FILE, 'utf8');
-        const resources = JSON.parse(data);
-        // 3. Das neue Objekt in das Array hinzufuegen.
+        const resources = await readData(RESOURCES_FILE);
         resources.push(newResource);
-        // 4. Das neue Array in die Datei schreiben.
-        writeFileSync(DATA_FILE, JSON.stringify(resources, null, 2), 'utf8');
-        // 5. Antwort schicken.
+        await writeData(RESOURCES_FILE, resources);
         res.status(201).json(newResource);
     } catch (error) {
         next(error);
     }
-
 });
 
 

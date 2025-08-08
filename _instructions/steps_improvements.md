@@ -125,24 +125,14 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
     
     ```jsx
         if (!fs.existsSync(filePath)) {
+    		    return [];
+    		}
     
     ```
     
     - `if (!fs.existsSync(filePath)) { ... }`: Diese Zeile prüft synchron, ob die Datei unter dem konstruierten `filePath` existiert.
         - `fs.existsSync()`: Ist eine synchrone Funktion. In diesem spezifischen Fall ist es jedoch akzeptabel, sie synchron zu verwenden, da das Prüfen der Dateiexistenz eine sehr schnelle Operation ist und den Event Loop nicht merklich blockiert.
-    
-    ```jsx
-            return [];
-    
-    ```
-    
     - `return [];`: Wenn die Datei nicht existiert, geben wir ein leeres Array zurück. Dies ist eine sichere Standardeinstellung, die verhindert, dass der Code abstürzt, wenn die Daten-JSON-Datei noch nicht erstellt wurde.
-    
-    ```jsx
-        }
-    
-    ```
-    
 6. Füge die Logik zum asynchronen Lesen und Parsen der Daten hinzu:
     
     ```jsx
@@ -233,11 +223,11 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
             - `'utf-8'`: Die Zeichenkodierung.
         - `await`: Pausiert die Ausführung dieser `async` Funktion, bis das Promise von `fsp.writeFile`aufgelöst ist. Der Event Loop bleibt währenddessen frei.
 
-### Schritt 3: Passe `routes/resources_bp.js` an (Resource Catalog Service)
+### Schritt 3: Passe `routes/resources.js` an (Resource Catalog Service)
 
-Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unseren neuen asynchronen Datenmanager verwendet. Das bedeutet, dass wir alte Imports und Pfadkonstanten entfernen und stattdessen die neuen asynchronen Funktionen mit `await` verwenden.
+Jetzt werden wir die `routes/resources.js`-Datei so anpassen, dass sie unseren neuen asynchronen Datenmanager verwendet. Das bedeutet, dass wir alte Imports und Pfadkonstanten entfernen und stattdessen die neuen asynchronen Funktionen mit `await` verwenden.
 
-1. Öffne die Datei **`routes/resources_bp.js`** in deinem Code-Editor.
+1. Öffne die Datei **`routes/resources.js`** in deinem Code-Editor.
 2. **Entferne die alten `fs`, `path` und `fileURLToPath` Imports:**
     - Lösche die folgenden Zeilen ganz oben in der Datei:
         
@@ -270,7 +260,7 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         
         ```
         
-        - **Erklärung:** Wir importieren die beiden Funktionen `readData` und `writeData` aus unserem `data_manager.js`Modul. Da `resources_bp.js` im Ordner `routes/` liegt und `data_manager.js` im Ordner `helpers/`, müssen wir mit `../` (eine Ebene nach oben) navigieren und dann in den `helpers/`Ordner.
+        - **Erklärung:** Wir importieren die beiden Funktionen `readData` und `writeData` aus unserem `data_manager.js`Modul. Da `resources.js` im Ordner `routes/` liegt und `data_manager.js` im Ordner `helpers/`, müssen wir mit `../` (eine Ebene nach oben) navigieren und dann in den `helpers/`Ordner.
 5. **Definiere die Dateinamen-Konstanten:**
     - Füge die folgenden Zeilen hinzu, um die Dateinamen zu definieren, die an `readData`/`writeData` übergeben werden:
         
@@ -283,8 +273,8 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         
         - **Erklärung:** Diese Konstanten speichern nur den Namen der JSON-Datei (z.B. `'resources.json'`), nicht den vollständigen Pfad. Der vollständige Pfad wird vom `data_manager.js` intern konstruiert.
 6. **Konvertiere alle Route-Handler zu `async` und verwende `await`:**
-    - Gehe jeden Endpunkt in `routes/resources_bp.js` durch und passe ihn an. Achte darauf, das Schlüsselwort `async` zur Funktionsdefinition hinzuzufügen und `await` vor jeden Aufruf von `readData` und `writeData` zu setzen.
-    - **Wichtiger Hinweis:** In den vorherigen Versionen wurde fälschlicherweise `notificationsRouter`verwendet. Der korrekte Router für den Resource Catalog Service ist in der Regel `resourcesRouter` oder einfach `router` innerhalb der `resources_bp.js` Datei, je nachdem, wie er in `app.js` importiert wird. Ich werde hier `resourcesRouter` als Platzhalter verwenden, der dem üblichen Schema für einen Ressourcen-Router entspricht. **Stelle sicher, dass du den Namen deines Routers (z.B. `router` oder `resourcesRouter`) in deiner Datei `resources_bp.js` entsprechend anpasst.**
+    - Gehe jeden Endpunkt in `routes/resources.js` durch und passe ihn an. Achte darauf, das Schlüsselwort `async` zur Funktionsdefinition hinzuzufügen und `await` vor jeden Aufruf von `readData` und `writeData` zu setzen.
+    - **Wichtiger Hinweis:** In den vorherigen Versionen wurde fälschlicherweise `notificationsRouter`verwendet. Der korrekte Router für den Resource Catalog Service ist in der Regel `resourcesRouter` oder einfach `router` innerhalb der `resources.js` Datei, je nachdem, wie er in `app.js` importiert wird. Ich werde hier `resourcesRouter` als Platzhalter verwenden, der dem üblichen Schema für einen Ressourcen-Router entspricht. **Stelle sicher, dass du den Namen deines Routers (z.B. `router` oder `resourcesRouter`) in deiner Datei `resources.js` entsprechend anpasst.**
     - **`GET /` Endpunkt (Alle Ressourcen abrufen):**
         
         ```jsx
@@ -297,10 +287,10 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
                 let filteredResources = resources;
         
                 if (type) {
-                    filteredResources = filteredResources.filter(r => String(r.type) === String(type));
+                    filteredResources = filteredResources.filter(r => r.type === type);
                 }
                 if (authorId) {
-                    filteredResources = filteredResources.filter(r => String(r.authorId) === String(authorId));
+                    filteredResources = filteredResources.filter(r => r.authorId === authorId);
                 }
         
                 res.status(200).json(filteredResources);
@@ -320,19 +310,19 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         ```jsx
         router.get('/:id', async (req, res, next) => {
             try {
-                const resourceId = String(req.params.id);
+                const resourceId = req.params.id;
                 const resources = await readData(RESOURCES_FILE_NAME);
         
                 const ratings = await readData(RATINGS_FILE_NAME);
-                const resourceRatings = ratings.filter(rating => String(rating.resourceId) === resourceId);
+                const resourceRatings = ratings.filter(rating => rating.resourceId === resourceId);
         
                 let averageRating = 0;
                 if (resourceRatings.length > 0) {
-                    const sumOfRatings = resourceRatings.reduce((sum, rating) => sum + Number(rating.ratingValue), 0);
+                    const sumOfRatings = resourceRatings.reduce((sum, rating) => sum + rating.ratingValue, 0);
                     averageRating = sumOfRatings / resourceRatings.length;
                 }
         
-                const resource = resources.find(r => String(r.id) === resourceId);
+                const resource = resources.find(r => r.id === resourceId);
         
                 if (resource) {
                     resource.averageRating = averageRating;
@@ -382,18 +372,15 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
     - **`POST /:resourceId/ratings` Endpunkt (Ressource bewerten):**
         
         ```jsx
-        import { validateRating } from '../middleware/validation.js'; // Import für validateRating
-        // ... andere Imports ...
-        
-        router.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
-            const resourceId = String(req.params.resourceId);
+        router.post('/:resourceId/ratings', async (req, res, next) => {
+            const resourceId = req.params.resourceId;
             const { ratingValue, userId } = req.body;
         
             const newRating = {
                 id: uuidv4(),
                 resourceId: resourceId,
                 ratingValue: ratingValue,
-                userId: userId ? String(userId) : 'anonymous',
+                userId: userId ? userId : 'anonymous',
                 timestamp: formatISO(new Date())
             };
         
@@ -415,18 +402,15 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
     - **`POST /:resourceId/feedback` Endpunkt (Text-Feedback hinzufügen):**
         
         ```jsx
-        import { validateFeedback } from '../middleware/validation.js'; // Import für validateFeedback
-        // ... andere Imports ...
-        
-        router.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => {
-            const resourceId = String(req.params.resourceId);
+        router.post('/:resourceId/feedback', async (req, res, next) => {
+            const resourceId = req.params.resourceId;
             const { feedbackText, userId } = req.body;
         
             const newFeedback = {
                 id: uuidv4(),
                 resourceId: resourceId,
                 feedbackText: feedbackText.trim(),
-                userId: userId ? String(userId) : 'anonymous',
+                userId: userId ? userId : 'anonymous',
                 timestamp: formatISO(new Date())
             };
         
@@ -448,18 +432,16 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
     - **`PUT /:resourceId/feedback/:feedbackId` Endpunkt (Text-Feedback ändern):**
         
         ```jsx
-        import { validateFeedback } from '../middleware/validation.js'; // Import für validateFeedback
-        // ... andere Imports ...
         
-        router.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => {
-            const resourceId = String(req.params.resourceId);
-            const feedbackId = String(req.params.feedbackId);
+        router.put('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
+            const resourceId = req.params.resourceId;
+            const feedbackId = req.params.feedbackI;
             const { feedbackText } = req.body;
         
             try {
                 let feedback = await readData(FEEDBACK_FILE_NAME);
         
-                const feedbackIndex = feedback.findIndex(f => String(f.id) === feedbackId && String(f.resourceId) === resourceId);
+                const feedbackIndex = feedback.findIndex(f => f.id === feedbackId && f.resourceId === resourceId);
         
                 if (feedbackIndex === -1) {
                     return res.status(404).json({ error: `Feedback mit ID ${feedbackId} für Ressource ${resourceId} nicht gefunden.` });
@@ -486,14 +468,14 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         
         ```jsx
         router.delete('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
-            const resourceId = String(req.params.resourceId);
-            const feedbackId = String(req.params.feedbackId);
+            const resourceId = req.params.resourceId;
+            const feedbackId = req.params.feedbackId;
         
             try {
                 let feedback = await readData(FEEDBACK_FILE_NAME);
                 const initialLength = feedback.length;
         
-                feedback = feedback.filter(f => !(String(f.id) === feedbackId && String(f.resourceId) === resourceId));
+                feedback = feedback.filter(f => !f.id === feedbackId && f.resourceId === resourceId));
         
                 if (feedback.length === initialLength) {
                     return res.status(404).json({ error: `Feedback mit ID ${feedbackId} für Ressource ${resourceId} nicht gefunden.` });
@@ -655,13 +637,13 @@ Die Logging-Middleware sollte als eine der ersten Middleware-Funktionen in `app
     ```jsx
     import express from 'express';
     import { logger } from './middleware/logger.js'; // Importiere die Logging-Middleware
-    import resourcesRouter from './routes/resources_bp.js'; // Korrekter Import für den Ressourcen-Router
+    import resourcesRouter from './routes/resources.js'; // Korrekter Import für den Ressourcen-Router
     import { errorHandler } from './middleware/error-handler.js'; // Beispiel-Import für Error Handler
     
     ```
     
     - `import { logger } from './middleware/logger.js';`: Importiert unsere soeben erstellte `logger`Middleware. Beachte den relativen Pfad `./middleware/logger.js`.
-    - `import resourcesRouter from './routes/resources_bp.js';`: **Dies ist der korrigierte Import.**Stellen Sie sicher, dass Ihr Router in `resources_bp.js` auch als `export default router;` oder `export default resourcesRouter;` exportiert wird, damit dieser Import funktioniert.
+    - `import resourcesRouter from './routes/resources.js';`: **Dies ist der korrigierte Import.**Stellen Sie sicher, dass Ihr Router in `resources.js` auch als `export default router;` oder `export default resourcesRouter;` exportiert wird, damit dieser Import funktioniert.
 3. Füge die Middleware zu deiner Anwendung hinzu. Sie sollte **vor** `app.use(express.json());` und **vor** der Registrierung aller Router platziert werden.
     
     ```jsx
@@ -691,7 +673,7 @@ Die Logging-Middleware sollte als eine der ersten Middleware-Funktionen in `app
     ```
     
     - `app.use(logger);`: Registriert unsere `logger`Middleware. Da sie hier platziert ist, wird sie für jede eingehende Anfrage ausgeführt, bevor die Anfrage von anderen Teilen der Anwendung verarbeitet wird.
-    - `app.use('/resources', resourcesRouter);`: **Dies ist die korrigierte Registrierung.** Es bindet den `resourcesRouter` an alle Pfade, die mit `/resources` beginnen. Das bedeutet, dass `GET /` in `resources_bp.js` zu `GET /resources` wird, `GET /:id` zu `GET /resources/:id` usw.
+    - `app.use('/resources', resourcesRouter);`: **Dies ist die korrigierte Registrierung.** Es bindet den `resourcesRouter` an alle Pfade, die mit `/resources` beginnen. Das bedeutet, dass `GET /` in `resources.js` zu `GET /resources` wird, `GET /:id` zu `GET /resources/:id` usw.
 
 **Manuelle Tests für Ticket RC-021**
 
@@ -762,7 +744,7 @@ Diese Funktion wird sicherstellen, dass beim Erstellen einer neuen Ressource (ü
     ```
     
     - **Erklärung:**
-        - `export`: Macht diese Funktion außerhalb dieser Datei verfügbar, sodass wir sie in `resources_bp.js`importieren können.
+        - `export`: Macht diese Funktion außerhalb dieser Datei verfügbar, sodass wir sie in `resources.js`importieren können.
         - `const validateResource`: Definiert eine Konstante namens `validateResource` und weist ihr eine Funktion zu.
         - `(req, res, next) => { ... }`: Dies ist die Standard-Signatur einer Express-Middleware-Funktion.
             - `req`: Das Request-Objekt, das alle Details der eingehenden HTTP-Anfrage enthält (z.B. Request-Body, Header, URL-Parameter).
@@ -1014,11 +996,11 @@ export const validateFeedback = (req, res, next) => {
 
 ```
 
-### Schritt 2: Wende die Validierungs-Middleware in `routes/resources_bp.js` an
+### Schritt 2: Wende die Validierungs-Middleware in `routes/resources.js` an
 
 Jetzt werden wir die neuen Validierungs-Middleware-Funktionen in den entsprechenden Endpunkten registrieren und die alte, redundante Validierungslogik entfernen. Dies macht die Route-Handler schlanker und sauberer.
 
-1. Öffne die Datei **`routes/resources_bp.js`** in deinem Code-Editor. Dies ist der Router, der alle Endpunkte für Ressourcen, Bewertungen und Feedback im **Resource Catalog Service** verwaltet.
+1. Öffne die Datei **`routes/resources.js`** in deinem Code-Editor. Dies ist der Router, der alle Endpunkte für Ressourcen, Bewertungen und Feedback im **Resource Catalog Service** verwaltet.
 2. **Importiere die neuen Validierungs-Middleware-Funktionen:**
     - Füge die folgende Zeile ganz oben in der Datei hinzu (direkt unter den anderen Imports, wie `Router`, `readData`, `writeData`, `uuidv4`, `formatISO`):
         
@@ -1471,9 +1453,9 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
         ```
         
 
-### Schritt 3: Wende Doc-Kommentare auf `routes/resources_bp.js` an
+### Schritt 3: Wende Doc-Kommentare auf `routes/resources.js` an
 
-1. Öffne die Datei **`routes/resources_bp.js`**.
+1. Öffne die Datei **`routes/resources.js`**.
 2. Füge einen **Dateikopf-Kommentar** am Anfang der Datei hinzu.
     - **Beispiel-Inhalt:**
         
@@ -1651,12 +1633,12 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
 **Manuelle Tests für Ticket RC-023**
 
 1. **Stelle sicher, dass du dich im Stammverzeichnis des Resource Catalog Service befindest.**
-2. **Überprüfe den Code manuell.** Gehe jede Datei durch, die du bearbeitet hast (`app.js`, `helpers/data_manager.js`, `routes/resources_bp.js`, `middleware/logger.js`, `middleware/validation.js`, `middleware/error-handler.js`).
+2. **Überprüfe den Code manuell.** Gehe jede Datei durch, die du bearbeitet hast (`app.js`, `helpers/data_manager.js`, `routes/resources.js`, `middleware/logger.js`, `middleware/validation.js`, `middleware/error-handler.js`).
 3. **Verifiziere, dass:**
     - Jede Funktion und Methode einen Doc-Kommentar hat, der ihren Zweck, Parameter und Rückgabewerte beschreibt.
     - Komplexe Logikblöcke mit Inline-Kommentaren versehen sind.
     - Die Kommentierung klar, prägnant und korrekt ist und dem JSDoc-Format folgt.
-    - Die Kommentare konsistent den **Resource Catalog Service** und den **`resourcesRouter`** (oder `router`innerhalb `resources_bp.js`) erwähnen.
+    - Die Kommentare konsistent den **Resource Catalog Service** und den **`resourcesRouter`** (oder `router`innerhalb `resources.js`) erwähnen.
 4. **Starte den Server**, um sicherzustellen, dass die Kommentare keine Syntaxfehler verursacht haben.
     
     ```bash
