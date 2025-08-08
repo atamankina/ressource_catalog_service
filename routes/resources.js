@@ -255,4 +255,28 @@ router.put('/:resourceId/feedback/:feedbackId', (req, res, next) => {
 });
 
 
+router.delete('/:resourceId/feedback/:feedbackId', (req, res, next) => {
+    const resourceId = req.params.resourceId;
+    const feedbackId = req.params.feedbackId;
+
+    try {
+        const data = readFileSync(FEEDBACK_FILE, 'utf8');
+        let feedback = JSON.parse(data);
+        const initialLength = feedback.length;
+        feedback = feedback.filter(f => !(f.id === feedbackId && f.resourceId === resourceId));
+
+        if (feedback.length === initialLength) {
+            res.status(404).json({ error: `Feedback mit ID ${feedbackId} für Ressource ${resourceId} nicht gefunden.` });
+            return;
+        }
+
+        writeFileSync(FEEDBACK_FILE, JSON.stringify(feedback, null, 2), 'utf8');
+        res.status(204).end();
+        } catch (error) {
+        next(error);
+    }
+});
+
+
+
 export default router;
