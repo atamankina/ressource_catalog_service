@@ -38,11 +38,23 @@ router.get('/:id', (req, res, next) => {
     try {
         // hier wird die ID aus der Anfrage ausgelesen und in der Konstante gespeichert, weiter wird diese ID fuer die Suche benutzt
         const resourceId = req.params.id;
+
         const data = readFileSync(DATA_FILE, 'utf8');
         const resources = JSON.parse(data);
         const resource = resources.find(r => r.id === resourceId);
 
+        const ratingsData = readFileSync(RATINGS_FILE, 'utf8');
+        const allRatings = JSON.parse(ratingsData);
+        const resourceRatings = allRatings.filter(rating => rating.resourceId === resourceId);
+
+        let averageRating = 0;
+        if (resourceRatings.length > 0) {
+            const sumOfRatings = resourceRatings.reduce((sum, rating) => sum + rating.ratingValue, 0);
+            averageRating = sumOfRatings / resourceRatings.length;
+        }
+
         if (resource) {
+            resource.averageRating = averageRating;
             res.json(resource);
         } else {
             res.status(404).json({ error: `Ressource mit ID ${resourceId} nicht gefunden.` })
