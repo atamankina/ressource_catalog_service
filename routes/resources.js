@@ -220,4 +220,39 @@ router.post('/:resourceId/feedback', (req, res, next) => {
 });
 
 
+router.put('/:resourceId/feedback/:feedbackId', (req, res, next) => {
+    const resourceId = req.params.resourceId;
+    const feedbackId = req.params.feedbackId;
+    const { feedbackText } = req.body;
+
+    if (!feedbackText || feedbackText.trim().length < 10 || feedbackText.trim().length > 500) {
+        res.status(400).json({ error: 'Aktualisierter Feedback-Text muss zwischen 10 und 500 Zeichen lang sein.' });
+        return;
+    }
+
+    try {
+        const data = readFileSync(FEEDBACK_FILE, 'utf8');
+        let feedback = JSON.parse(data);
+        const feedbackIndex = feedback.findIndex(f => f.id === feedbackId && f.resourceId === resourceId);
+        
+        if (feedbackIndex === -1) {
+            res.status(404).json({ error: `Feedback mit ID ${feedbackId} für Ressource ${resourceId} nicht gefunden.` });
+            return;
+        }
+
+        feedback[feedbackIndex] = {
+            ...feedback[feedbackIndex], 
+            feedbackText: feedbackText.trim(), 
+            timestamp: new Date().toISOString() 
+        };
+
+        writeFileSync(FEEDBACK_FILE, JSON.stringify(feedback, null, 2), 'utf8');
+        res.status(200).json(feedback[feedbackIndex]);
+        } catch (error) {
+        next(error);
+    }
+
+});
+
+
 export default router;
