@@ -1,0 +1,16 @@
+[
+  {
+    "id": "c0b07a72-60e9-4c7c-bc4e-f5ef32992bc3",
+    "resourceId": "1",
+    "feedbackText": "Dieser Kurs ist sehr informativ und gut strukturiert!",
+    "userId": "user_alice",
+    "timestamp": "2025-08-08T08:54:15.618Z"
+  },
+  {
+    "id": "92ae6fac-5bec-4d1f-bc6c-0ffcc892bbca",
+    "resourceId": "2",
+    "feedbackText": "Das Video-Tutorial war sehr hilfreich und leicht verständlich.",
+    "userId": "anonymous",
+    "timestamp": "2025-08-08T08:55:32.269Z"
+  }
+]

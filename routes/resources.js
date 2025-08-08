@@ -12,6 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_FILE = path.join(__dirname, '../data', 'resources.json');
 const RATINGS_FILE = path.join(__dirname, '../data', 'ratings.json');
+const FEEDBACK_FILE = path.join(__dirname, '../data', 'feedback.json');
 
 
 router.get('/', (req, res, next) => {
@@ -161,7 +162,8 @@ router.post('/:resourceId/ratings', (req, res, next) => {
     const { ratingValue, userId } = req.body;
 
     if (!ratingValue || ratingValue < 1 || ratingValue > 5 || !Number.isInteger(ratingValue)) {
-        return res.status(400).json({ error: 'Bewertung muss eine ganze Zahl zwischen 1 und 5 sein.' });
+        res.status(400).json({ error: 'Bewertung muss eine ganze Zahl zwischen 1 und 5 sein.' });
+        return;
     }
 
     const newRating = {
@@ -173,12 +175,12 @@ router.post('/:resourceId/ratings', (req, res, next) => {
     };
 
     try {
-        const data = readFileSync(RATINGS_FILE, 'utf-8');
+        const data = readFileSync(RATINGS_FILE, 'utf8');
         const ratings = JSON.parse(data);
 
         ratings.push(newRating);
 
-        writeFileSync(RATINGS_FILE, JSON.stringify(ratings, null, 2), 'utf-8');
+        writeFileSync(RATINGS_FILE, JSON.stringify(ratings, null, 2), 'utf8');
 
         res.status(201).json(newRating);
 
@@ -187,6 +189,35 @@ router.post('/:resourceId/ratings', (req, res, next) => {
     }
 });
 
+
+router.post('/:resourceId/feedback', (req, res, next) => {
+    const resourceId = req.params.resourceId;
+    const { feedbackText, userId } = req.body;
+
+    if (!feedbackText || feedbackText.trim().length < 10 || feedbackText.trim().length > 500) {
+        res.status(400).json({ error: 'Feedback-Text muss zwischen 10 und 500 Zeichen lang sein.' });
+        return;
+    }
+
+    const newFeedback = {
+        id: uuidv4(), 
+        resourceId: resourceId, 
+        feedbackText: feedbackText.trim(), 
+        userId: userId || 'anonymous', 
+        timestamp: new Date().toISOString() 
+    };
+
+    try {
+        const data = readFileSync(FEEDBACK_FILE, 'utf8');
+        const feedback = JSON.parse(data);
+        feedback.push(newFeedback);
+        writeFileSync(FEEDBACK_FILE, JSON.stringify(feedback, null, 2), 'utf8');
+        res.status(201).json(newFeedback);
+
+    } catch (error) {
+        next(error);
+    }
+});
 
 
 export default router;
