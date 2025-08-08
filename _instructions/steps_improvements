@@ -1,4 +1,4 @@
-# RC-020: Asynchroner Datenmanager – Detaillierter Walkthrough
+# RC-019: Asynchroner Datenmanager – Detaillierter Walkthrough (Resource Catalog Service)
 
 **Titel:** Asynchroner Datenmanager für Dateizugriffe im Resource Catalog Service
 
@@ -36,7 +36,7 @@ Zuerst schaffen wir den neuen Ordner und die Datei, die unsere zentralisierten D
     - **Beispiel:** Wenn du im Ordner `Projekte` bist und dein Service `resource_catalog_service` heißt, dann gib `cd resource_catalog_service` ein.
 3. Erstelle den neuen Ordner namens `helpers`:
     
-    ```bash
+    ```
     mkdir helpers
     
     ```
@@ -44,7 +44,7 @@ Zuerst schaffen wir den neuen Ordner und die Datei, die unsere zentralisierten D
     - `mkdir helpers`: Dieser Befehl erstellt einen neuen Ordner mit dem Namen `helpers`. Dies ist eine gängige Konvention, um kleine, wiederverwendbare Hilfsfunktionen zu gruppieren, die keine direkten Routen oder Middleware sind.
 4. Erstelle im neu erstellten Ordner `helpers` eine neue Datei mit dem Namen **`data_manager.js`**:
     
-    ```bash
+    ```
     touch helpers/data_manager.js
     
     ```
@@ -58,28 +58,28 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
 1. Öffne die Datei **`helpers/data_manager.js`** in deinem Code-Editor.
 2. Beginne mit den Import-Anweisungen:
     
-    ```jsx
+    ```
     import * as fs from 'fs';
     
     ```
     
     - `import * as fs from 'fs';`: Diese Zeile importiert das gesamte eingebaute **File System (fs)**Modul von Node.js. Wir benötigen es für synchrone Hilfsfunktionen wie `fs.existsSync` und `fs.mkdirSync`. Diese spezifischen Funktionen sind keine blockierenden I/O-Operationen und können daher synchron verwendet werden, ohne den Event Loop zu beeinträchtigen.
     
-    ```jsx
+    ```
     import fsp from 'fs/promises';
     
     ```
     
     - `import fsp from 'fs/promises';`: Diese Zeile importiert die **Promise-basierte API** des `fs`Moduls. Wir geben ihr den Alias `fsp` (kurz für "File System Promises"), um sie von der synchronen `fs`API zu unterscheiden. `fsp` enthält die asynchronen Versionen der Dateisystemfunktionen, die Promises zurückgeben.
     
-    ```jsx
+    ```
     import path from 'path';
     
     ```
     
     - `import path from 'path';`: Diese Zeile importiert das eingebaute **Path-Modul**. Es stellt Dienstprogramme für die Arbeit mit Datei- und Verzeichnispfaden bereit, was plattformunabhängige Pfade ermöglicht (z.B. `/` auf Linux/macOS und `\` auf Windows).
     
-    ```jsx
+    ```
     import { fileURLToPath } from 'url';
     
     ```
@@ -87,14 +87,14 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
     - `import { fileURLToPath } from 'url';`: Diese Zeile importiert eine spezifische Hilfsfunktion aus dem `url`Modul. In ES Modules (`import`/`export`) sind die globalen Variablen `__filename` und `__dirname` (die in CommonJS-Modulen verfügbar sind) nicht direkt verfügbar. Diese Funktion hilft uns, den Dateipfad und das Verzeichnis des aktuellen Moduls zu ermitteln.
 3. Füge die Helfervariablen für Pfade hinzu:
     
-    ```jsx
+    ```
     const __filename = fileURLToPath(import.meta.url);
     
     ```
     
     - `const __filename = fileURLToPath(import.meta.url);`: Diese Zeile ermittelt den vollständigen Dateipfad des aktuellen Moduls (`data_manager.js`). `import.meta.url` gibt die URL des aktuellen Moduls zurück (z.B. `file:///path/to/your/project/helpers/data_manager.js`), und `fileURLToPath`konvertiert diese URL in einen plattformspezifischen Dateipfad.
     
-    ```jsx
+    ```
     const __dirname = path.dirname(__filename);
     
     ```
@@ -102,7 +102,7 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
     - `const __dirname = path.dirname(__filename);`: Diese Zeile ermittelt den Verzeichnispfad, in dem sich die aktuelle Datei (`data_manager.js`) befindet. Wenn `__filename` z.B. `/path/to/your/project/helpers/data_manager.js` ist, dann ist `__dirname/path/to/your/project/helpers`.
 4. Beginne mit der Definition der `readData`Funktion:
     
-    ```jsx
+    ```
     export const readData = async (fileName) => {
     
     ```
@@ -113,7 +113,7 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
         - `fileName`: Dies ist der Parameter, der den Namen der JSON-Datei (z.B. `'resources.json'`) entgegennimmt, die gelesen werden soll.
 5. Füge die Logik zum Konstruieren des Dateipfads und Prüfen der Existenz hinzu:
     
-    ```jsx
+    ```
         const filePath = path.join(__dirname, '../data', fileName);
     
     ```
@@ -123,7 +123,7 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
         - `'../data'`: `..` navigiert eine Ebene nach oben (zum Service-Stammverzeichnis, z.B. `/path/to/your/project/`). Dann wird der `data/`Ordner angehängt (z.B. `/path/to/your/project/data/`).
         - `fileName`: Wird angehängt (z.B. `resources.json`), um den vollständigen Pfad zu bilden (z.B. `/path/to/your/project/data/resources.json`).
     
-    ```jsx
+    ```
         if (!fs.existsSync(filePath)) {
     
     ```
@@ -131,21 +131,21 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
     - `if (!fs.existsSync(filePath)) { ... }`: Diese Zeile prüft synchron, ob die Datei unter dem konstruierten `filePath` existiert.
         - `fs.existsSync()`: Ist eine synchrone Funktion. In diesem spezifischen Fall ist es jedoch akzeptabel, sie synchron zu verwenden, da das Prüfen der Dateiexistenz eine sehr schnelle Operation ist und den Event Loop nicht merklich blockiert.
     
-    ```jsx
+    ```
             return [];
     
     ```
     
     - `return [];`: Wenn die Datei nicht existiert, geben wir ein leeres Array zurück. Dies ist eine sichere Standardeinstellung, die verhindert, dass der Code abstürzt, wenn die Daten-JSON-Datei noch nicht erstellt wurde.
     
-    ```jsx
+    ```
         }
     
     ```
     
 6. Füge die Logik zum asynchronen Lesen und Parsen der Daten hinzu:
     
-    ```jsx
+    ```
         const data = await fsp.readFile(filePath, 'utf-8');
     
     ```
@@ -156,7 +156,7 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
             - `'utf-8'`: Gibt die Zeichenkodierung an, in der die Datei gelesen werden soll.
         - `await`: Dieses Schlüsselwort ist entscheidend. Es bewirkt, dass die Ausführung der `readData`Funktion **pausiert**, bis das Promise, das von `fsp.readFile()` zurückgegeben wird, aufgelöst (d.h., der Lesevorgang ist abgeschlossen) ist. Während diese Funktion pausiert, bleibt der Node.js Event Loop frei, um andere Aufgaben (wie die Bearbeitung anderer HTTP-Anfragen) zu erledigen. Sobald die Datei gelesen wurde, wird der Inhalt dem `data`Konstanten zugewiesen.
     
-    ```jsx
+    ```
         return JSON.parse(data);
     };
     
@@ -165,7 +165,7 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
     - `return JSON.parse(data);`: Diese Zeile konvertiert den JSON-String (den wir aus der Datei gelesen haben) in ein JavaScript-Objekt (typischerweise ein Array von Objekten oder ein einzelnes Objekt), mit dem wir in unserem Code arbeiten können.
 7. Beginne mit der Definition der `writeData`Funktion:
     
-    ```jsx
+    ```
     export const writeData = async (fileName, data) => {
     
     ```
@@ -175,28 +175,28 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
         - `data`: Das JavaScript-Array oder -Objekt, das in die JSON-Datei geschrieben werden soll.
 8. Füge die Logik zum Konstruieren des Dateipfads und Sicherstellen des Verzeichnisses hinzu:
     
-    ```jsx
+    ```
         const filePath = path.join(__dirname, '../data', fileName);
     
     ```
     
     - `const filePath = path.join(__dirname, '../data', fileName);`: Konstruiert den vollständigen Pfad zur Zieldatei, genau wie in `readData`.
     
-    ```jsx
+    ```
         const dir = path.dirname(filePath);
     
     ```
     
     - `const dir = path.dirname(filePath);`: Ermittelt den Verzeichnispfad, in dem die Datei abgelegt werden soll (z.B. `/path/to/your/project/data`).
     
-    ```jsx
+    ```
         if (!fs.existsSync(dir)) {
     
     ```
     
     - `if (!fs.existsSync(dir)) { ... }`: Prüft synchron, ob dieses Verzeichnis existiert.
     
-    ```jsx
+    ```
             fs.mkdirSync(dir, { recursive: true });
     
     ```
@@ -205,14 +205,14 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
         - `recursive: true`: Stellt sicher, dass auch übergeordnete, nicht existierende Verzeichnisse erstellt werden, falls sie noch nicht vorhanden sind.
         - Auch diese Operation ist in Ordnung, synchron zu sein, da Verzeichnisse in der Regel nur einmal erstellt werden müssen und diese Operation sehr schnell ist.
     
-    ```jsx
+    ```
         }
     
     ```
     
 9. Füge die Logik zum Konvertieren der Daten in JSON und asynchronen Schreiben hinzu:
     
-    ```jsx
+    ```
         const jsonData = JSON.stringify(data, null, 2);
     
     ```
@@ -220,7 +220,7 @@ Jetzt schreiben wir den Code für unsere asynchronen Lese- und Schreibfunktionen
     - `const jsonData = JSON.stringify(data, null, 2);`: Konvertiert das JavaScript-Objekt (`data`) in einen JSON-String.
         - `null, 2`: Diese optionalen Argumente von `JSON.stringify()` sind für das "Pretty Printing". Sie sorgen dafür, dass der JSON-String mit einer Einrückung von 2 Leerzeichen formatiert wird. Dies macht die `.json`Dateien im Dateisystem viel lesbarer und einfacher zu debuggen.
     
-    ```jsx
+    ```
         await fsp.writeFile(filePath, jsonData, 'utf-8');
     };
     
@@ -241,7 +241,7 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
 2. **Entferne die alten `fs`, `path` und `fileURLToPath` Imports:**
     - Lösche die folgenden Zeilen ganz oben in der Datei:
         
-        ```jsx
+        ```
         // import fs from 'fs';
         // import path from 'path';
         // import { fileURLToPath } from 'url';
@@ -252,7 +252,7 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
 3. **Entferne die alten Pfadkonstanten und Helfervariablen:**
     - Lösche die folgenden Zeilen (oder ähnliche, die Pfade zu JSON-Dateien definieren) nach den Imports:
         
-        ```jsx
+        ```
         // const __filename = fileURLToPath(import.meta.url);
         // const __dirname = path.dirname(__filename);
         // const DATA_FILE = path.join(__dirname, '../data', 'resources.json');
@@ -265,7 +265,7 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
 4. **Importiere die neuen asynchronen Datenmanager-Funktionen:**
     - Füge die folgende Zeile ganz oben in der Datei hinzu (direkt unter den anderen Imports, z.B. `uuid` und `date-fns`):
         
-        ```jsx
+        ```
         import { readData, writeData } from '../helpers/data_manager.js';
         
         ```
@@ -274,7 +274,7 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
 5. **Definiere die Dateinamen-Konstanten:**
     - Füge die folgenden Zeilen hinzu, um die Dateinamen zu definieren, die an `readData`/`writeData` übergeben werden:
         
-        ```jsx
+        ```
         const RESOURCES_FILE_NAME = 'resources.json';
         const RATINGS_FILE_NAME = 'ratings.json';
         const FEEDBACK_FILE_NAME = 'feedback.json';
@@ -284,10 +284,12 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         - **Erklärung:** Diese Konstanten speichern nur den Namen der JSON-Datei (z.B. `'resources.json'`), nicht den vollständigen Pfad. Der vollständige Pfad wird vom `data_manager.js` intern konstruiert.
 6. **Konvertiere alle Route-Handler zu `async` und verwende `await`:**
     - Gehe jeden Endpunkt in `routes/resources_bp.js` durch und passe ihn an. Achte darauf, das Schlüsselwort `async` zur Funktionsdefinition hinzuzufügen und `await` vor jeden Aufruf von `readData` und `writeData` zu setzen.
+    - **Wichtiger Hinweis:** In den vorherigen Versionen wurde fälschlicherweise `notificationsRouter`verwendet. Der korrekte Router für den Resource Catalog Service ist in der Regel `resourcesRouter` oder einfach `router` innerhalb der `resources_bp.js` Datei, je nachdem, wie er in `app.js` importiert wird. Ich werde hier `resourcesRouter` als Platzhalter verwenden, der dem üblichen Schema für einen Ressourcen-Router entspricht. **Stelle sicher, dass du den Namen deines Routers (z.B. `router` oder `resourcesRouter`) in deiner Datei `resources_bp.js` entsprechend anpasst.**
     - **`GET /` Endpunkt (Alle Ressourcen abrufen):**
         
-        ```jsx
-        notificationsRouter.get('/', async (req, res, next) => {
+        ```
+        // Angenommen, der Router ist in dieser Datei als 'resourcesRouter' exportiert oder direkt 'router'
+        router.get('/', async (req, res, next) => {
             try {
                 const resources = await readData(RESOURCES_FILE_NAME);
                 const { type, authorId } } = req.query;
@@ -315,8 +317,8 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
             - `const resources = await readData(RESOURCES_FILE_NAME);`: Hier rufen wir unsere neue `readData`Funktion auf. Das `await` bewirkt, dass die Ausführung dieses Handlers pausiert, bis das Promise von `readData` aufgelöst ist (d.h., die Daten wurden erfolgreich aus der Datei gelesen). Während dieser Pause kann der Node.js Event Loop andere Anfragen bearbeiten.
     - **`GET /:id` Endpunkt (Einzelne Ressource abrufen):**
         
-        ```jsx
-        notificationsRouter.get('/:id', async (req, res, next) => {
+        ```
+        router.get('/:id', async (req, res, next) => {
             try {
                 const resourceId = String(req.params.id);
                 const resources = await readData(RESOURCES_FILE_NAME);
@@ -349,8 +351,11 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         - **Erklärung:** Auch hier wird der Handler `async` gemacht, und `await` wird für `readData()` für beide Dateizugriffe verwendet (`RESOURCES_FILE_NAME` und `RATINGS_FILE_NAME`).
     - **`POST /` Endpunkt (Ressource erstellen):**
         
-        ```jsx
-        notificationsRouter.post('/', validateResource, async (req, res, next) => {
+        ```
+        import { validateResource } from '../middleware/validation.js'; // Import für validateResource
+        // ... andere Imports ...
+        
+        router.post('/', validateResource, async (req, res, next) => {
             const newResourceData = req.body;
         
             const newResource = {
@@ -373,11 +378,14 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         
         ```
         
-        - **Erklärung:** Der Handler wird `async` gemacht. `await readData()` wird verwendet, um die bestehenden Ressourcen zu laden, und `await writeData()` wird verwendet, um die aktualisierte Liste zurückzuschreiben.
+        - **Erklärung:** Der Handler wird `async` gemacht. `await readData()` wird verwendet, um die bestehenden Ressourcen zu laden, und `await writeData()` wird verwendet, um die aktualisierte Liste zurückzuschreiben. Beachte den zusätzlichen Import für `validateResource` (wird in RC-021 detaillierter behandelt).
     - **`POST /:resourceId/ratings` Endpunkt (Ressource bewerten):**
         
-        ```jsx
-        notificationsRouter.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
+        ```
+        import { validateRating } from '../middleware/validation.js'; // Import für validateRating
+        // ... andere Imports ...
+        
+        router.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
             const resourceId = String(req.params.resourceId);
             const { ratingValue, userId } = req.body;
         
@@ -403,11 +411,14 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         
         ```
         
-        - **Erklärung:** Der Handler wird `async` gemacht. `await readData()` und `await writeData()` werden für die Bewertungsdatei verwendet.
+        - **Erklärung:** Der Handler wird `async` gemacht. `await readData()` und `await writeData()` werden für die Bewertungsdatei verwendet. Beachte den zusätzlichen Import für `validateRating`.
     - **`POST /:resourceId/feedback` Endpunkt (Text-Feedback hinzufügen):**
         
-        ```jsx
-        notificationsRouter.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => {
+        ```
+        import { validateFeedback } from '../middleware/validation.js'; // Import für validateFeedback
+        // ... andere Imports ...
+        
+        router.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => {
             const resourceId = String(req.params.resourceId);
             const { feedbackText, userId } = req.body;
         
@@ -433,11 +444,14 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         
         ```
         
-        - **Erklärung:** Der Handler wird `async` gemacht. `await readData()` und `await writeData()` werden für die Feedback-Datei verwendet.
+        - **Erklärung:** Der Handler wird `async` gemacht. `await readData()` und `await writeData()` werden für die Feedback-Datei verwendet. Beachte den zusätzlichen Import für `validateFeedback`.
     - **`PUT /:resourceId/feedback/:feedbackId` Endpunkt (Text-Feedback ändern):**
         
-        ```jsx
-        notificationsRouter.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => {
+        ```
+        import { validateFeedback } from '../middleware/validation.js'; // Import für validateFeedback
+        // ... andere Imports ...
+        
+        router.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => {
             const resourceId = String(req.params.resourceId);
             const feedbackId = String(req.params.feedbackId);
             const { feedbackText } = req.body;
@@ -467,11 +481,11 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         
         ```
         
-        - **Erklärung:** Der Handler wird `async` gemacht. `await readData()` und `await writeData()` werden für die Feedback-Datei verwendet.
+        - **Erklärung:** Der Handler wird `async` gemacht. `await readData()` und `await writeData()` werden für die Feedback-Datei verwendet. Beachte den zusätzlichen Import für `validateFeedback`.
     - **`DELETE /resources/:resourceId/feedback/:feedbackId` Endpunkt (Text-Feedback löschen):**
         
-        ```jsx
-        notificationsRouter.delete('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
+        ```
+        router.delete('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
             const resourceId = String(req.params.resourceId);
             const feedbackId = String(req.params.feedbackId);
         
@@ -498,12 +512,12 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
         
         - **Erklärung:** Der Handler wird `async` gemacht. `await readData()` und `await writeData()` werden für die Feedback-Datei verwendet.
 
-**Manuelle Tests für Ticket RC-020**
+**Manuelle Tests für Ticket RC-019**
 
 1. **Stelle sicher, dass du dich im Stammverzeichnis des Resource Catalog Service befindest.**
 2. **Stoppe den Server und starte ihn neu:**
     
-    ```bash
+    ```
     node app.js
     
     ```
@@ -514,23 +528,14 @@ Jetzt werden wir die `routes/resources_bp.js`-Datei so anpassen, dass sie unser
     - Besonders wichtig ist, dass keine Fehler auftreten und die Daten korrekt gelesen und geschrieben werden.
 4. **Führe den nächsten Git-Commit aus.**
     
-    ```bash
+    ```
     git add .
+    git commit -m "refactor(data): Implement async data manager in helpers/ for Resource Catalog Service"
     
     ```
     
-    - `git add .`: Dieser Befehl fügt alle Änderungen im aktuellen Verzeichnis und seinen Unterverzeichnissen zum Staging-Bereich von Git hinzu. Das bedeutet, Git wird diese Änderungen im nächsten Commit verfolgen.
-    
-    ```bash
-    git commit -m "refactor(data): Implement async data manager in helpers/"
-    
-    ```
-    
-    - `git commit -m "refactor(data): Implement async data manager in helpers/"`: Dieser Befehl erstellt einen neuen Commit mit den Änderungen, die sich im Staging-Bereich befinden.
-        - `m`: Steht für "message" und ermöglicht es dir, eine Commit-Nachricht direkt in der Befehlszeile anzugeben.
-        - `"refactor(data): Implement async data manager in helpers/"`: Dies ist die Commit-Nachricht. Sie sollte kurz und prägnant beschreiben, was in diesem Commit geändert wurde. Die Konvention `refactor(data):` zeigt an, dass es sich um ein Refactoring im Datenzugriffsbereich handelt.
 
-# RC-021: Logging-Middleware – Detaillierter Walkthrough
+# RC-020: Logging-Middleware – Detaillierter Walkthrough (Resource Catalog Service)
 
 **Titel:** Implementierung einer Logging-Middleware im Resource Catalog Service
 
@@ -650,12 +655,13 @@ Die Logging-Middleware sollte als eine der ersten Middleware-Funktionen in `app
     ```
     import express from 'express';
     import { logger } from './middleware/logger.js'; // Importiere die Logging-Middleware
-    // import notificationsRouter from './routes/resources_bp.js'; // Beispiel-Import für Router
-    // import { errorHandler } from './middleware/error-handler.js'; // Beispiel-Import für Error Handler
+    import resourcesRouter from './routes/resources_bp.js'; // Korrekter Import für den Ressourcen-Router
+    import { errorHandler } from './middleware/error-handler.js'; // Beispiel-Import für Error Handler
     
     ```
     
     - `import { logger } from './middleware/logger.js';`: Importiert unsere soeben erstellte `logger`Middleware. Beachte den relativen Pfad `./middleware/logger.js`.
+    - `import resourcesRouter from './routes/resources_bp.js';`: **Dies ist der korrigierte Import.**Stellen Sie sicher, dass Ihr Router in `resources_bp.js` auch als `export default router;` oder `export default resourcesRouter;` exportiert wird, damit dieser Import funktioniert.
 3. Füge die Middleware zu deiner Anwendung hinzu. Sie sollte **vor** `app.use(express.json());` und **vor** der Registrierung aller Router platziert werden.
     
     ```
@@ -671,11 +677,11 @@ Die Logging-Middleware sollte als eine der ersten Middleware-Funktionen in `app
         res.send('Hello from Resource Catalog Service!');
     });
     
-    // Beispiel: Registrierung der Router (wie in früheren Tickets implementiert)
-    // app.use('/', notificationsRouter); // Für Resource Catalog Service (wenn resources_bp.js so benannt ist)
+    // Registrierung des Ressourcen-Routers
+    app.use('/resources', resourcesRouter); // RC-009: Bindet den Ressourcen-Router an den Pfad '/resources'
     
-    // Beispiel: Globale Fehler-Handling-Middleware (muss zuletzt registriert werden)
-    // app.use(errorHandler);
+    // Globale Fehler-Handling-Middleware (muss zuletzt registriert werden)
+    app.use(errorHandler);
     
     // Starte den Server
     app.listen(PORT, () => {
@@ -685,8 +691,9 @@ Die Logging-Middleware sollte als eine der ersten Middleware-Funktionen in `app
     ```
     
     - `app.use(logger);`: Registriert unsere `logger`Middleware. Da sie hier platziert ist, wird sie für jede eingehende Anfrage ausgeführt, bevor die Anfrage von anderen Teilen der Anwendung verarbeitet wird.
+    - `app.use('/resources', resourcesRouter);`: **Dies ist die korrigierte Registrierung.** Es bindet den `resourcesRouter` an alle Pfade, die mit `/resources` beginnen. Das bedeutet, dass `GET /` in `resources_bp.js` zu `GET /resources` wird, `GET /:id` zu `GET /resources/:id` usw.
 
-**Manuelle Tests für Ticket RC-021**
+**Manuelle Tests für Ticket RC-020**
 
 1. **Stelle sicher, dass du dich im Stammverzeichnis des Resource Catalog Service befindest.**
 2. **Stoppe den Server und starte ihn neu:**
@@ -699,7 +706,7 @@ Die Logging-Middleware sollte als eine der ersten Middleware-Funktionen in `app
     - Du solltest die Startmeldung des Servers sehen.
 3. **Sende verschiedene Anfragen mit `curl` oder im Browser:**
     - `curl http://localhost:5002/`
-    - `curl http://localhost:5002/resources`
+    - `curl http://localhost:5002/resources` (Beachte den `/resources`Pfad!)
     - `curl -X POST -H "Content-Type: application/json" -d '{"title": "Neuer Kurs", "type": "Kurs"}' http://localhost:5002/resources`
     - `curl http://localhost:5002/resources/non_existent_id` (dies sollte einen 404 Fehler erzeugen)
 4. **Beobachte das Terminal, in dem dein Server läuft.**
@@ -711,20 +718,16 @@ Die Logging-Middleware sollte als eine der ersten Middleware-Funktionen in `app
     
     ```
     git add .
-    
-    ```
-    
-    ```
     git commit -m "feat(logging): Add global logging middleware to Resource Catalog Service"
     
     ```
     
 
-# RC-022: Validierungslogik in Middleware auslagern – Detaillierter Walkthrough
+# RC-021: Validierungslogik in Middleware auslagern – Detaillierter Walkthrough (Resource Catalog Service)
 
-**Titel:** Auslagerung der Validierungslogik für Bewertungen und Feedback im Resource Catalog Service
+**Titel:** Auslagerung der Validierungslogik für Ressourcen, Bewertungen und Feedback im Resource Catalog Service
 
-**Ziel:** Die Validierungslogik für Bewertungen und Feedback soll in wiederverwendbare Middleware-Funktionen ausgelagert werden, damit die Route-Handler schlanker und die Validierung konsistent ist.
+**Ziel:** Die Validierungslogik für Ressourcen, Bewertungen und Feedback soll in wiederverwendbare Middleware-Funktionen ausgelagert werden, damit die Route-Handler schlanker und die Validierung konsistent ist.
 
 ### Konzept: Dedizierte Validierungs-Middleware
 
@@ -738,13 +741,20 @@ Dies macht den Code sauberer, da die Validierungslogik von der Geschäftslogik d
 
 ### Schritt 1: Erstelle oder aktualisiere `middleware/validation.js`
 
-Wir werden Funktionen für die Validierung von Bewertungen und Feedback hinzufügen.
+Wir werden Funktionen für die Validierung von Ressourcen, Bewertungen und Feedback hinzufügen.
 
-1. Stelle sicher, dass du dich im Stammverzeichnis des **Resource Catalog Service** befindest.
-2. Öffne die Datei **`middleware/validation.js`**. (Diese Datei sollte bereits eine `validateResource`Funktion enthalten, die du in einem früheren Ticket erstellt hast.)
+1. Stelle sicher, dass du dich im Stammverzeichnis deines **Resource Catalog Service** befindest.
+2. Öffne die Datei **`middleware/validation.js`**. (Diese Datei sollte bereits existieren oder du erstellst sie, falls nicht.)
 3. Füge die folgenden Funktionen hinzu:
     
     ```
+    /**
+     * Middleware zur Validierung der Daten für eine neue Ressource (POST /resources).
+     * Stellt sicher, dass 'title' und 'type' im Request-Body vorhanden sind.
+     * @param {object} req - Das Request-Objekt von Express.
+     * @param {object} res - Das Response-Objekt von Express.
+     * @param {function} next - Die Callback-Funktion zum Aufrufen der nächsten Middleware.
+     */
     export const validateResource = (req, res, next) => {
         const { title, type } = req.body;
         if (!title || !type) {
@@ -753,136 +763,56 @@ Wir werden Funktionen für die Validierung von Bewertungen und Feedback hinzufü
         next();
     };
     
-    ```
-    
-    - **Erklärung:** Dies ist die bestehende `validateResource`Middleware, die wir bereits haben. Sie prüft, ob `title` und `type` für eine Ressource vorhanden sind.
-    
-    ```
+    /**
+     * Middleware zur Validierung der Daten für eine Bewertung (POST /resources/:id/ratings).
+     * Stellt sicher, dass 'ratingValue' eine ganze Zahl zwischen 1 und 5 ist.
+     * Wandelt 'ratingValue' in eine Ganzzahl um.
+     * @param {object} req - Das Request-Objekt von Express.
+     * @param {object} res - Das Response-Objekt von Express.
+     * @param {function} next - Die Callback-Funktion zum Aufrufen der nächsten Middleware.
+     */
     export const validateRating = (req, res, next) => {
-    
-    ```
-    
-    - `export const validateRating = (req, res, next) => { ... }`: Definiert eine neue Middleware-Funktion namens `validateRating` und exportiert sie. Sie wird für die Validierung von Bewertungsdaten verwendet.
-    
-    ```
         let { ratingValue } = req.body;
     
-    ```
-    
-    - `let { ratingValue } = req.body;`: Extrahiert `ratingValue` aus dem Request-Body. Wir verwenden `let`, weil wir den Wert möglicherweise umwandeln müssen.
-    
-    ```
+        // Versuche, den Wert in eine ganze Zahl umzuwandeln
         ratingValue = parseInt(ratingValue, 10);
     
-    ```
-    
-    - `ratingValue = parseInt(ratingValue, 10);`: Versucht, den `ratingValue` in eine ganze Zahl umzuwandeln.
-        - `parseInt()`: Eine globale JavaScript-Funktion, die einen String in eine Ganzzahl parst.
-        - `10`: Gibt die Basis des Zahlensystems an (dezimal).
-        - **Erklärung:** Wenn der Client `ratingValue` als String (z.B. `"5"`) sendet, wandelt `parseInt` ihn in eine Zahl um. Wenn der Wert nicht in eine Zahl umgewandelt werden kann (z.B. `"abc"`), wird `NaN`(Not-a-Number) zurückgegeben.
-    
-    ```
+        // Prüfe, ob der Wert eine gültige Zahl und eine ganze Zahl ist
         if (isNaN(ratingValue) || !Number.isInteger(ratingValue)) {
-    
-    ```
-    
-    - `if (isNaN(ratingValue) || !Number.isInteger(ratingValue)) { ... }`: Diese Bedingung prüft zwei Dinge:
-        - `isNaN(ratingValue)`: Prüft, ob `ratingValue` nach der Umwandlung `NaN` ist (d.h., es war kein gültiger Zahlenstring).
-        - `!Number.isInteger(ratingValue)`: Prüft, ob der Wert keine ganze Zahl ist (z.B. `3.5`).
-        - `||`: Der logische ODER-Operator. Wenn eine der Bedingungen wahr ist, ist der Wert ungültig.
-    
-    ```
             return res.status(400).json({ error: 'Bewertung muss eine ganze Zahl sein.' });
-    
-    ```
-    
-    - `return res.status(400).json(...)`: Wenn die Validierung fehlschlägt, senden wir einen **`400 Bad Request`** Statuscode und eine Fehlermeldung. `return` beendet die Funktion hier.
-    
-    ```
         }
+        // Prüfe, ob der Wert im gültigen Bereich liegt
         if (ratingValue < 1 || ratingValue > 5) {
-    
-    ```
-    
-    - `if (ratingValue < 1 || ratingValue > 5) { ... }`: Prüft, ob der numerische `ratingValue` im gültigen Bereich von 1 bis 5 liegt.
-    
-    ```
             return res.status(400).json({ error: 'Bewertung muss zwischen 1 und 5 liegen.' });
-    
-    ```
-    
-    - `return res.status(400).json(...)`: Sendet eine Fehlermeldung, wenn der Bereich ungültig ist.
-    
-    ```
         }
+        // Überschreibe den ursprünglichen Wert im Request-Body mit dem umgewandelten numerischen Wert
         req.body.ratingValue = ratingValue;
-    
-    ```
-    
-    - `req.body.ratingValue = ratingValue;`: Diese Zeile ist wichtig. Sie überschreibt den ursprünglichen `ratingValue` im `req.body`Objekt mit dem explizit umgewandelten und validierten numerischen Wert. So kann der nachfolgende Route-Handler sicher sein, dass `req.body.ratingValue` eine gültige Zahl ist.
-    
-    ```
         next();
     };
     
-    ```
-    
-    - `next();`: Wenn alle Validierungen erfolgreich sind, wird `next()` aufgerufen, um die Kontrolle an den nächsten Handler im Express-Stack weiterzugeben.
-    
-    ```
+    /**
+     * Middleware zur Validierung der Daten für Feedback (POST/PUT /resources/:id/feedback).
+     * Stellt sicher, dass 'feedbackText' vorhanden und zwischen 10 und 500 Zeichen lang ist.
+     * @param {object} req - Das Request-Objekt von Express.
+     * @param {object} res - Das Response-Objekt von Express.
+     * @param {function} next - Die Callback-Funktion zum Aufrufen der nächsten Middleware.
+     */
     export const validateFeedback = (req, res, next) => {
-    
-    ```
-    
-    - `export const validateFeedback = (req, res, next) => { ... }`: Definiert eine neue Middleware-Funktion namens `validateFeedback` und exportiert sie. Sie wird für die Validierung von Feedback-Text verwendet.
-    
-    ```
         const { feedbackText } = req.body;
     
-    ```
-    
-    - `const { feedbackText } = req.body;`: Extrahiert `feedbackText` aus dem Request-Body.
-    
-    ```
+        // Prüfe, ob feedbackText ein String ist und nicht nur aus Leerzeichen besteht
         if (typeof feedbackText !== 'string' || !feedbackText.trim()) {
-    
-    ```
-    
-    - `if (typeof feedbackText !== 'string' || !feedbackText.trim()) { ... }`: Diese Bedingung prüft zwei Dinge:
-        - `typeof feedbackText !== 'string'`: Prüft, ob `feedbackText` überhaupt ein String ist.
-        - `!feedbackText.trim()`: `trim()` entfernt alle Leerzeichen am Anfang und Ende des Strings. Wenn der bereinigte String leer ist (z.B. wenn nur Leerzeichen gesendet wurden oder der String leer war), ist die Bedingung wahr.
-        - `||`: Der logische ODER-Operator. Wenn der Text kein String ist ODER leer ist, ist er ungültig.
-    
-    ```
             return res.status(400).json({ error: 'Feedback-Text ist erforderlich und darf nicht leer sein.' });
-    
-    ```
-    
-    - `return res.status(400).json(...)`: Sendet eine Fehlermeldung, wenn der Text ungültig ist.
-    
-    ```
         }
+        // Prüfe die Länge des bereinigten Feedback-Textes
         if (feedbackText.trim().length < 10 || feedbackText.trim().length > 500) {
-    
-    ```
-    
-    - `if (feedbackText.trim().length < 10 || feedbackText.trim().length > 500) { ... }`: Prüft, ob die Länge des bereinigten `feedbackText` zwischen 10 und 500 Zeichen liegt.
-    
-    ```
             return res.status(400).json({ error: 'Feedback-Text muss zwischen 10 und 500 Zeichen lang sein.' });
-    
-    ```
-    
-    - `return res.status(400).json(...)`: Sendet eine Fehlermeldung, wenn die Länge außerhalb des Bereichs liegt.
-    
-    ```
         }
         next();
     };
     
     ```
     
-    - `next();`: Wenn alle Validierungen erfolgreich sind, wird `next()` aufgerufen.
 
 ### Schritt 2: Wende die Validierungs-Middleware in `routes/resources_bp.js` an
 
@@ -898,13 +828,16 @@ Wir werden die neuen Validierungs-Middleware-Funktionen in den entsprechenden En
         ```
         
         - **Erklärung:** Wir importieren die drei Validierungsfunktionen aus unserer `middleware/validation.js`Datei.
-3. **Passe den `notificationsRouter.post('/', ...)`Endpunkt (für Ressourcen-Erstellung) an:**
-    - Finde den `notificationsRouter.post('/', ...)`Endpunkt.
+3. **Passe den `resourcesRouter.post('/', ...)`Endpunkt (für Ressourcen-Erstellung) an:**
+    - Finde den `resourcesRouter.post('/', ...)`Endpunkt.
     - Stelle sicher, dass `validateResource` als Middleware hinzugefügt ist.
     - **Lösche** die alte, manuelle Validierungslogik aus dem `try`Block dieses Endpunkts.
     
     ```
-    notificationsRouter.post('/', validateResource, async (req, res, next) => {
+    // HINWEIS: Dies ist der Ressourcen-Router, der in app.js unter '/resources' eingebunden wird.
+    // Der Name 'router' oder 'resourcesRouter' hängt davon ab, wie du ihn in resources_bp.js exportiert hast.
+    // Ich verwende hier 'router' zur Klarheit in der Datei, da es der Standard ist, wenn man Express.Router() nutzt.
+    router.post('/', validateResource, async (req, res, next) => {
         const newResourceData = req.body;
     
         // --- DIESE ALTE VALIDIERUNGSLOGIK WIRD GELÖSCHT ---
@@ -935,14 +868,14 @@ Wir werden die neuen Validierungs-Middleware-Funktionen in den entsprechenden En
     ```
     
     - **Erklärung:**
-        - `notificationsRouter.post('/', validateResource, async (req, res, next) => { ... });`: Die `validateResource`Middleware wird jetzt **vor** dem eigentlichen Route-Handler ausgeführt. Wenn die Validierung fehlschlägt, wird der Route-Handler gar nicht erst erreicht, was den Code sauberer macht.
-4. **Passe den `notificationsRouter.post('/:resourceId/ratings', ...)`Endpunkt an:**
-    - Finde den `notificationsRouter.post('/:resourceId/ratings', ...)`Endpunkt.
+        - `router.post('/', validateResource, async (req, res, next) => { ... });`: Die `validateResource`Middleware wird jetzt **vor** dem eigentlichen Route-Handler ausgeführt. Wenn die Validierung fehlschlägt, wird der Route-Handler gar nicht erst erreicht, was den Code sauberer macht.
+4. **Passe den `router.post('/:resourceId/ratings', ...)`Endpunkt an:**
+    - Finde den `router.post('/:resourceId/ratings', ...)`Endpunkt.
     - Füge `validateRating` als Middleware hinzu.
     - **Lösche** die alte, manuelle Validierungslogik aus dem `try`Block dieses Endpunkts.
     
     ```
-    notificationsRouter.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
+    router.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
         const resourceId = String(req.params.resourceId);
         const { ratingValue, userId } = req.body; // ratingValue ist jetzt durch validateRating validiert und umgewandelt
     
@@ -967,22 +900,22 @@ Wir werden die neuen Validierungs-Middleware-Funktionen in den entsprechenden En
     
             res.status(201).json(newRating);
         } catch (error) {
-            console.error('Fehler beim Schreiben der Bewertung in die Datei:', error);
-            next(error);
-        }
-    });
+                console.error('Fehler beim Schreiben der Bewertung in die Datei:', error);
+                next(error);
+            }
+        });
     
     ```
     
     - **Erklärung:**
-        - `notificationsRouter.post('/:resourceId/ratings', validateRating, async (req, res, next) => { ... });`: Die `validateRating`Middleware wird hinzugefügt. Der Route-Handler muss sich nun nicht mehr um die Validierung kümmern.
-5. **Passe den `notificationsRouter.post('/:resourceId/feedback', ...)`Endpunkt an:**
-    - Finde den `notificationsRouter.post('/:resourceId/feedback', ...)`Endpunkt.
+        - `router.post('/:resourceId/ratings', validateRating, async (req, res, next) => { ... });`: Die `validateRating`Middleware wird hinzugefügt. Der Route-Handler muss sich nun nicht mehr um die Validierung kümmern.
+5. **Passe den `router.post('/:resourceId/feedback', ...)`Endpunkt an:**
+    - Finde den `router.post('/:resourceId/feedback', ...)`Endpunkt.
     - Füge `validateFeedback` als Middleware hinzu.
     - **Lösche** die alte, manuelle Validierungslogik aus dem `try`Block dieses Endpunkts.
     
     ```
-    notificationsRouter.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => {
+    router.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => {
         const resourceId = String(req.params.resourceId);
         const { feedbackText, userId } = req.body; // feedbackText ist jetzt durch validateFeedback validiert
     
@@ -1015,14 +948,14 @@ Wir werden die neuen Validierungs-Middleware-Funktionen in den entsprechenden En
     ```
     
     - **Erklärung:**
-        - `notificationsRouter.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => { ... });`: Die `validateFeedback`Middleware wird hinzugefügt.
-6. **Passe den `notificationsRouter.put('/:resourceId/feedback/:feedbackId', ...)`Endpunkt an:**
-    - Finde den `notificationsRouter.put('/:resourceId/feedback/:feedbackId', ...)`Endpunkt.
+        - `router.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => { ... });`: Die `validateFeedback`Middleware wird hinzugefügt.
+6. **Passe den `router.put('/:resourceId/feedback/:feedbackId', ...)`Endpunkt an:**
+    - Finde den `router.put('/:resourceId/feedback/:feedbackId', ...)`Endpunkt.
     - Füge `validateFeedback` als Middleware hinzu.
     - **Lösche** die alte, manuelle Validierungslogik aus dem `try`Block dieses Endpunkts.
     
     ```
-    notificationsRouter.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => {
+    router.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => {
         const resourceId = String(req.params.resourceId);
         const feedbackId = String(req.params.feedbackId);
         const { feedbackText } = req.body; // feedbackText ist jetzt durch validateFeedback validiert
@@ -1059,9 +992,9 @@ Wir werden die neuen Validierungs-Middleware-Funktionen in den entsprechenden En
     ```
     
     - **Erklärung:**
-        - `notificationsRouter.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => { ... });`: Die `validateFeedback`Middleware wird hinzugefügt.
+        - `router.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => { ... });`: Die `validateFeedback`Middleware wird hinzugefügt.
 
-**Manuelle Tests für Ticket RC-022**
+**Manuelle Tests für Ticket RC-021**
 
 1. **Stelle sicher, dass du dich im Stammverzeichnis des Resource Catalog Service befindest.**
 2. **Stoppe den Server und starte ihn neu:**
@@ -1078,16 +1011,12 @@ Wir werden die neuen Validierungs-Middleware-Funktionen in den entsprechenden En
     
     ```
     git add .
-    
-    ```
-    
-    ```
-    git commit -m "refactor(validation): Move rating and feedback validation to middleware in Resource Catalog Service"
+    git commit -m "refactor(validation): Move resource, rating and feedback validation to middleware in Resource Catalog Service"
     
     ```
     
 
-# RC-023: Umfassende Code-Kommentierung – Detaillierter Walkthrough
+# RC-022: Umfassende Code-Kommentierung – Detaillierter Walkthrough (Resource Catalog Service)
 
 **Titel:** Umfassende Code-Kommentierung im Resource Catalog Service
 
@@ -1122,7 +1051,7 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
         ```
         /**
          * @file Dies ist die Hauptanwendungsdatei für den Resource Catalog Service.
-         * @description Initialisiert die Express.js-Anwendung, registriert globale Middleware und bindet Router für Ressourcen, Bewertungen und Feedback ein.
+         * @description Initialisiert die Express.js-Anwendung, registriert globale Middleware und bindet den Ressourcen-Router ein.
          */
         
         ```
@@ -1204,14 +1133,14 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
         
         ```
         /**
-         * @file Dieser Router verwaltet alle API-Endpunkte für Ressourcen, Bewertungen und Feedback.
+         * @file Dieser Router verwaltet alle API-Endpunkte für Ressourcen, Bewertungen und Feedback im Resource Catalog Service.
          * @description Enthält Routen für CRUD-Operationen auf Ressourcen und deren zugehörigen Bewertungen/Feedback.
          */
         
         ```
         
 3. Füge **Doc-Kommentare** für jeden einzelnen Endpunkt (`GET /`, `GET /:id`, `POST /`, `POST /:resourceId/ratings`, `POST /:resourceId/feedback`, `PUT /:resourceId/feedback/:feedbackId`, `DELETE /resources/:resourceId/feedback/:feedbackId`) hinzu.
-    - **Beispiel-Inhalt für `GET /`:**
+    - **Beispiel-Inhalt für `GET /` (im Kontext des Routers, der in `app.js` unter `/resources` eingebunden wird):**
         
         ```
         /**
@@ -1227,7 +1156,7 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
         ```
         
         - **Erklärung:**
-            - `GET /`: Die HTTP-Methode und der Pfad.
+            - `GET /`: Die HTTP-Methode und der Pfad *relativ zum Router-Mount-Punkt* (`/resources` in `app.js`).
             - `@summary`: Eine kurze Zusammenfassung des Endpunkts.
             - `@param {object} req.query`: Beschreibt das `req.query`Objekt.
             - `@param {string} [req.query.type]`: Beschreibt einen optionalen Query-Parameter. Die eckigen Klammern `[]` zeigen an, dass er optional ist.
@@ -1275,7 +1204,7 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
 ### Schritt 4: Wende Doc-Kommentare auf Middleware-Dateien an (`middleware/logger.js`, `middleware/validation.js`, `middleware/error-handler.js`)
 
 1. Öffne die Datei **`middleware/logger.js`**.
-2. Füge einen **Dateikopf-Kommentar** und einen **Doc-Kommentar** für die `logger`Funktion hinzu.
+2. Füge einen **Dateikopf-Kommentar** und einen **Doc-Kommentar** für die `logger`Funktion hinzu (siehe Beispiel in RC-020 Walkthrough, Schritt 2).
     - **Beispiel-Inhalt für `logger.js`:**
         
         ```
@@ -1294,13 +1223,13 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
          * @param {function} next - Die Callback-Funktion zum Aufrufen der nächsten Middleware.
          */
         export const logger = (req, res, next) => {
-            // ... (Implementierung) ...
+            // ... (Implementierung wie in RC-020) ...
         };
         
         ```
         
 3. Öffne die Datei **`middleware/validation.js`**.
-4. Füge einen **Dateikopf-Kommentar** und **Doc-Kommentare** für jede Validierungsfunktion (`validateResource`, `validateRating`, `validateFeedback`) hinzu.
+4. Füge einen **Dateikopf-Kommentar** und **Doc-Kommentare** für jede Validierungsfunktion (`validateResource`, `validateRating`, `validateFeedback`) hinzu (siehe Beispiel in RC-021 Walkthrough, Schritt 1).
     - **Beispiel-Inhalt für `validation.js`:**
         
         ```
@@ -1319,7 +1248,7 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
          * @param {function} next - Die Callback-Funktion zum Aufrufen der nächsten Middleware.
          */
         export const validateResource = (req, res, next) => {
-            // ... (Implementierung ) ...
+            // ... (Implementierung wie in RC-021) ...
         };
         
         /**
@@ -1331,7 +1260,7 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
          * @param {function} next - Die Callback-Funktion zum Aufrufen der nächsten Middleware.
          */
         export const validateRating = (req, res, next) => {
-            // ... (Implementierung ) ...
+            // ... (Implementierung wie in RC-021) ...
         };
         
         /**
@@ -1342,7 +1271,7 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
          * @param {function} next - Die Callback-Funktion zum Aufrufen der nächsten Middleware.
          */
         export const validateFeedback = (req, res, next) => {
-            // ... (Implementierung ) ...
+            // ... (Implementierung wie in RC-021) ...
         };
         
         ```
@@ -1373,7 +1302,7 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
         ```
         
 
-**Manuelle Tests für Ticket RC-023**
+**Manuelle Tests für Ticket RC-022**
 
 1. **Stelle sicher, dass du dich im Stammverzeichnis des Resource Catalog Service befindest.**
 2. **Überprüfe den Code manuell.** Gehe jede Datei durch, die du bearbeitet hast (`app.js`, `helpers/data_manager.js`, `routes/resources_bp.js`, `middleware/logger.js`, `middleware/validation.js`, `middleware/error-handler.js`).
@@ -1381,6 +1310,7 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
     - Jede Funktion und Methode einen Doc-Kommentar hat, der ihren Zweck, Parameter und Rückgabewerte beschreibt.
     - Komplexe Logikblöcke mit Inline-Kommentaren versehen sind.
     - Die Kommentierung klar, prägnant und korrekt ist und dem JSDoc-Format folgt.
+    - Die Kommentare konsistent den **Resource Catalog Service** und den **`resourcesRouter`** (oder `router`innerhalb `resources_bp.js`) erwähnen.
 4. **Starte den Server**, um sicherzustellen, dass die Kommentare keine Syntaxfehler verursacht haben.
     
     ```
@@ -1392,13 +1322,12 @@ Guter Code ist selbsterklärend, aber selbst der beste Code profitiert von Komme
     
     ```
     git add .
-    ```sh
     git commit -m "feat(docs): Add comprehensive code comments to Resource Catalog Service"
     
     ```
     
 
-# RC-024: Robuste Datenvergleiche und Typumwandlung – Detaillierter Walkthrough
+# RC-023: Robuste Datenvergleiche und Typumwandlung – Detaillierter Walkthrough (Resource Catalog Service)
 
 **Titel:** Robuste Datenvergleiche und Typumwandlung im Resource Catalog Service
 
@@ -1432,7 +1361,8 @@ Wir werden Vergleiche und Zuweisungen für IDs und numerische Werte robuster mac
     - Passe die Filterlogik an, um Typen explizit zu Strings zu konvertieren, bevor sie verglichen werden.
     
     ```
-    notificationsRouter.get('/', async (req, res, next) => {
+    // Angenommen, der Router ist in dieser Datei als 'router' exportiert
+    router.get('/', async (req, res, next) => {
         try {
             const resources = await readData(RESOURCES_FILE_NAME);
             const { type, authorId } } = req.query;
@@ -1463,7 +1393,7 @@ Wir werden Vergleiche und Zuweisungen für IDs und numerische Werte robuster mac
     - Stelle sicher, dass alle ID-Vergleiche und die Umwandlung von `ratingValue` robust sind.
     
     ```
-    notificationsRouter.get('/:id', async (req, res, next) => {
+    router.get('/:id', async (req, res, next) => {
         try {
             // Konvertiere URL-Parameter explizit zu String, da sie immer Strings sind
             const resourceId = String(req.params.id);
@@ -1500,12 +1430,12 @@ Wir werden Vergleiche und Zuweisungen für IDs und numerische Werte robuster mac
     - **Erklärung:**
         - `const resourceId = String(req.params.id);`: Der URL-Parameter `id` ist immer ein String. Wir machen es explizit, um Konsistenz zu gewährleisten.
         - `String(rating.resourceId) === resourceId`: Stellt sicher, dass der Vergleich von `resourceId`s immer zwischen Strings erfolgt, um potenzielle Typ-Mismatch-Probleme zu vermeiden.
-        - `Number(rating.ratingValue)`: Obwohl `validateRating` bereits `ratingValue` in eine Zahl umwandelt, ist es hier eine zusätzliche Absicherung, um sicherzustellen, dass die Addition korrekt erfolgt, falls `ratingValue` aus irgendeinem Grund doch kein reiner numerischer Typ im Array sein sollte.
+        - `Number(rating.ratingValue)`: Obwohl `validateRating` (aus RC-021) bereits `ratingValue` in eine Zahl umwandelt, ist es hier eine zusätzliche Absicherung, um sicherzustellen, dass die Addition korrekt erfolgt, falls `ratingValue` aus irgendeinem Grund doch kein reiner numerischer Typ im Array sein sollte (z.B. durch manuelle Bearbeitung der JSON-Datei).
 4. **`POST /:resourceId/ratings` Endpunkt (Ressource bewerten):**
     - Stelle sicher, dass `userId` explizit als String gespeichert wird.
     
     ```
-    notificationsRouter.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
+    router.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
         const resourceId = String(req.params.resourceId);
         const { ratingValue, userId } = req.body;
     
@@ -1537,7 +1467,7 @@ Wir werden Vergleiche und Zuweisungen für IDs und numerische Werte robuster mac
     - Stelle sicher, dass `userId` explizit als String gespeichert wird.
     
     ```
-    notificationsRouter.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => {
+    router.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => {
         const resourceId = String(req.params.resourceId);
         const { feedbackText, userId } = req.body;
     
@@ -1569,7 +1499,7 @@ Wir werden Vergleiche und Zuweisungen für IDs und numerische Werte robuster mac
     - Stelle sicher, dass alle ID-Vergleiche robust sind.
     
     ```
-    notificationsRouter.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => {
+    router.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => {
         const resourceId = String(req.params.resourceId);
         const feedbackId = String(req.params.feedbackId);
         const { feedbackText } = req.body;
@@ -1606,7 +1536,7 @@ Wir werden Vergleiche und Zuweisungen für IDs und numerische Werte robuster mac
     - Stelle sicher, dass alle ID-Vergleiche robust sind.
     
     ```
-    notificationsRouter.delete('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
+    router.delete('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
         const resourceId = String(req.params.resourceId);
         const feedbackId = String(req.params.feedbackId);
     
@@ -1637,9 +1567,9 @@ Wir werden Vergleiche und Zuweisungen für IDs und numerische Werte robuster mac
 
 ### Schritt 2: Passe `middleware/validation.js` an
 
-Die Anpassung der `validateRating` Middleware wurde bereits vorgenommen, um die Typumwandlung und Validierung für `ratingValue` zu handhaben. Dies ist der Hauptpunkt für dieses Ticket in der Validierungs-Middleware.
+Die Anpassung der `validateRating` Middleware wurde bereits in Ticket RC-021 vorgenommen, um die Typumwandlung und Validierung für `ratingValue` zu handhaben. Dies ist der Hauptpunkt für dieses Ticket in der Validierungs-Middleware.
 
-**Manuelle Tests für Ticket RC-024**
+**Manuelle Tests für Ticket RC-023**
 
 1. **Stelle sicher, dass du dich im Stammverzeichnis des Resource Catalog Service befindest.**
 2. **Stoppe den Server und starte ihn neu:**
@@ -1657,10 +1587,6 @@ Die Anpassung der `validateRating` Middleware wurde bereits vorgenommen, um di
     
     ```
     git add .
-    
-    ```
-    
-    ```
     git commit -m "refactor(types): Ensure robust data comparisons and type conversions in Resource Catalog Service"
     
     ```
