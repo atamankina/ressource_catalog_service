@@ -1,3 +1,8 @@
+/**
+ * @file Dieser Router verwaltet alle API-Endpunkte für Ressourcen, Bewertungen und Feedback im Resource Catalog Service.
+ * @description Enthält Routen für CRUD-Operationen auf Ressourcen und deren zugehörigen Bewertungen/Feedback.
+ */
+
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { validateResource, validateRating, validateFeedback } from '../middleware/validation.js';
@@ -10,7 +15,18 @@ const RESOURCES_FILE = 'resources.json';
 const RATINGS_FILE = 'ratings.json';
 const FEEDBACK_FILE = 'feedback.json';
 
-
+/**
+ * GET /
+ * @summary Ruft alle Ressourcen ab, optional gefiltert nach Typ oder Autor-ID.
+ * @param {express.Request} req - Das Express-Request-Objekt.
+ * @param {object} req.query - Query-Parameter für die Filterung.
+ * @param {string} [req.query.type] - Optionaler Typ der Ressource zum Filtern.
+ * @param {string} [req.query.authorId] - Optionale Autor-ID zum Filtern.
+ * @param {express.Response} res - Das Express-Response-Objekt.
+ * @param {express.NextFunction} next - Die Next-Middleware-Funktion.
+ * @returns {Array<object>} 200 - Ein Array von Ressourcenobjekten, gefiltert oder ungefiltert.
+ * @returns {object} 500 - Interner Serverfehler.
+ */
 router.get('/', async (req, res, next) => {
     try {
         const resources = await readData(RESOURCES_FILE);
@@ -32,7 +48,17 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-
+/**
+ * GET /:id
+ * @summary Ruft eine einzelne Ressource anhand ihrer ID ab und berechnet die durchschnittliche Bewertung.
+ * @param {express.Request} req - Das Express-Request-Objekt.
+ * @param {string} req.params.id - Die ID der abzurufenden Ressource.
+ * @param {express.Response} res - Das Express-Response-Objekt.
+ * @param {express.NextFunction} next - Die Next-Middleware-Funktion.
+ * @returns {object} 200 - Das Ressourcenobjekt mit hinzugefügter durchschnittlicher Bewertung.
+ * @returns {object} 404 - Ressource nicht gefunden.
+ * @returns {object} 500 - Interner Serverfehler.
+ */
 router.get('/:id', async (req, res, next) => {
     try {
         const resourceId = req.params.id;
@@ -59,7 +85,18 @@ router.get('/:id', async (req, res, next) => {
     }
 });
 
-
+/**
+ * POST /
+ * @summary Erstellt eine neue Ressource.
+ * @description Nimmt Ressourcendaten im Request-Body entgegen, generiert eine UUID und speichert die Ressource.
+ * @param {express.Request} req - Das Express-Request-Objekt.
+ * @param {object} req.body - Die Daten der neuen Ressource (z.B. { title: string, type: string, ... }).
+ * @param {express.Response} res - Das Express-Response-Objekt.
+ * @param {express.NextFunction} next - Die Next-Middleware-Funktion.
+ * @returns {object} 201 - Das neu erstellte Ressourcenobjekt.
+ * @returns {object} 400 - Ungültige oder fehlende Ressourcendaten (validiert durch `validateResource` Middleware).
+ * @returns {object} 500 - Interner Serverfehler.
+ */
 router.post('/', validateResource, async (req, res, next) => {
     const newResourceData = req.body;
 
@@ -79,7 +116,20 @@ router.post('/', validateResource, async (req, res, next) => {
     }
 });
 
-
+/**
+ * PUT /:id
+ * @summary Aktualisiert eine bestehende Ressource vollständig oder teilweise.
+ * @description Nimmt die Ressourcen-ID aus den Parametern und die zu aktualisierenden Daten im Request-Body entgegen.
+ * @param {express.Request} req - Das Express-Request-Objekt.
+ * @param {string} req.params.id - Die ID der zu aktualisierenden Ressource.
+ * @param {object} req.body - Die neuen Daten für die Ressource.
+ * @param {express.Response} res - Das Express-Response-Objekt.
+ * @param {express.NextFunction} next - Die Next-Middleware-Funktion.
+ * @returns {object} 200 - Das aktualisierte Ressourcenobjekt.
+ * @returns {object} 400 - Keine Daten zum Aktualisieren vorhanden oder ungültige Daten.
+ * @returns {object} 404 - Ressource nicht gefunden.
+ * @returns {object} 500 - Interner Serverfehler.
+ */
 router.put('/:id', async (req, res, next) => {
     const resourceId = req.params.id;
     const newData = req.body; 
@@ -90,7 +140,7 @@ router.put('/:id', async (req, res, next) => {
     }
 
     try {
-        const data = await readData(DATA_FILE);
+        const data = await readData(RESOURCES_FILE);
         const resources = JSON.parse(data);
 
         const resourceIndex = resources.findIndex(r => r.id === resourceId);
@@ -102,7 +152,7 @@ router.put('/:id', async (req, res, next) => {
 
         resources[resourceIndex] = {...resources[resourceIndex], ...newData};
 
-        await writeData(DATA_FILE, resources);
+        await writeData(RESOURCES_FILE, resources);
 
         res.status(200).json(resources[resourceIndex]);
     } catch(error) {
@@ -110,12 +160,22 @@ router.put('/:id', async (req, res, next) => {
     }
 });
 
-
+/**
+ * DELETE /:id
+ * @summary Löscht eine Ressource anhand ihrer ID.
+ * @param {express.Request} req - Das Express-Request-Objekt.
+ * @param {string} req.params.id - Die ID der zu löschenden Ressource.
+ * @param {express.Response} res - Das Express-Response-Objekt.
+ * @param {express.NextFunction} next - Die Next-Middleware-Funktion.
+ * @returns {object} 204 - Erfolgreich gelöscht (kein Inhalt zurückgegeben).
+ * @returns {object} 404 - Ressource nicht gefunden.
+ * @returns {object} 500 - Interner Serverfehler.
+ */
 router.delete('/:id', async (req, res, next) => {
     const resourceId = req.params.id;
 
     try {
-        const resources = await readData(DATA_FILE);
+        const resources = await readData(RESOURCES_FILE);
         const initialLength = resources.length;
         resources = resources.filter(r => r.id !== resourceId);
 
@@ -124,7 +184,7 @@ router.delete('/:id', async (req, res, next) => {
             return;
         }
 
-        await writeData(DATA_FILE, resources);
+        await writeData(RESOURCES_FILE, resources);
 
         res.status(204).end();
     } catch (error) {
@@ -132,7 +192,19 @@ router.delete('/:id', async (req, res, next) => {
     }
 });
 
-
+/**
+ * POST /:resourceId/ratings
+ * @summary Fügt einer Ressource eine neue Bewertung hinzu.
+ * @description Nimmt Bewertungsdaten (ratingValue, userId) entgegen, generiert eine UUID und speichert die Bewertung.
+ * @param {express.Request} req - Das Express-Request-Objekt.
+ * @param {string} req.params.resourceId - Die ID der Ressource, die bewertet wird.
+ * @param {object} req.body - Die Bewertungsdaten ({ ratingValue: number, userId: string }).
+ * @param {express.Response} res - Das Express-Response-Objekt.
+ * @param {express.NextFunction} next - Die Next-Middleware-Funktion.
+ * @returns {object} 201 - Das neu erstellte Bewertungsobjekt.
+ * @returns {object} 400 - Ungültige oder fehlende Bewertungsdaten (validiert durch `validateRating` Middleware).
+ * @returns {object} 500 - Interner Serverfehler.
+ */
 router.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const { ratingValue, userId } = req.body;
@@ -156,7 +228,19 @@ router.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
     }
 });
 
-
+/**
+ * POST /:resourceId/feedback
+ * @summary Fügt einer Ressource ein neues Feedback hinzu.
+ * @description Nimmt Feedback-Text und optional eine Benutzer-ID entgegen, generiert eine UUID und speichert das Feedback.
+ * @param {express.Request} req - Das Express-Request-Objekt.
+ * @param {string} req.params.resourceId - Die ID der Ressource, für die Feedback gegeben wird.
+ * @param {object} req.body - Die Feedback-Daten ({ feedbackText: string, [userId]: string }).
+ * @param {express.Response} res - Das Express-Response-Objekt.
+ * @param {express.NextFunction} next - Die Next-Middleware-Funktion.
+ * @returns {object} 201 - Das neu erstellte Feedback-Objekt.
+ * @returns {object} 400 - Ungültige oder fehlende Feedback-Daten (validiert durch `validateFeedback` Middleware).
+ * @returns {object} 500 - Interner Serverfehler.
+ */
 router.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const { feedbackText, userId } = req.body;
@@ -180,7 +264,21 @@ router.post('/:resourceId/feedback', validateFeedback, async (req, res, next) =>
     }
 });
 
-
+/**
+ * PUT /:resourceId/feedback/:feedbackId
+ * @summary Aktualisiert ein bestehendes Feedback für eine Ressource.
+ * @description Nimmt die IDs der Ressource und des Feedbacks sowie den aktualisierten Feedback-Text entgegen.
+ * @param {express.Request} req - Das Express-Request-Objekt.
+ * @param {string} req.params.resourceId - Die ID der Ressource, zu der das Feedback gehört.
+ * @param {string} req.params.feedbackId - Die ID des zu aktualisierenden Feedbacks.
+ * @param {object} req.body - Die aktualisierten Feedback-Daten ({ feedbackText: string }).
+ * @param {express.Response} res - Das Express-Response-Objekt.
+ * @param {express.NextFunction} next - Die Next-Middleware-Funktion.
+ * @returns {object} 200 - Das aktualisierte Feedback-Objekt.
+ * @returns {object} 400 - Ungültige oder fehlende Feedback-Daten (validiert durch `validateFeedback` Middleware).
+ * @returns {object} 404 - Feedback nicht gefunden.
+ * @returns {object} 500 - Interner Serverfehler.
+ */
 router.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const feedbackId = req.params.feedbackId;
@@ -209,7 +307,19 @@ router.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, re
     }
 });
 
-
+/**
+ * DELETE /:resourceId/feedback/:feedbackId
+ * @summary Löscht ein Feedback für eine bestimmte Ressource.
+ * @description Löscht ein Feedback-Element anhand seiner ID und der zugehörigen Ressourcen-ID.
+ * @param {express.Request} req - Das Express-Request-Objekt.
+ * @param {string} req.params.resourceId - Die ID der Ressource, zu der das Feedback gehört.
+ * @param {string} req.params.feedbackId - Die ID des zu löschenden Feedbacks.
+ * @param {express.Response} res - Das Express-Response-Objekt.
+ * @param {express.NextFunction} next - Die Next-Middleware-Funktion.
+ * @returns {object} 204 - Erfolgreich gelöscht (kein Inhalt zurückgegeben).
+ * @returns {object} 404 - Feedback nicht gefunden.
+ * @returns {object} 500 - Interner Serverfehler.
+ */
 router.delete('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const feedbackId = req.params.feedbackId;
