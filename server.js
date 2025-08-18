@@ -1,6 +1,7 @@
 import express from 'express';
 import resourcesRouter from './routes/resources.js';
 import { errorHandler } from './middleware/error-handler.js';
+import { logger } from './middleware/logger.js';
 import 'dotenv/config';
 import cors from 'cors';
 
@@ -9,6 +10,7 @@ const PORT = process.env.PORT || 5002;
 const app = express();
 
 // Middleware (pre-routes)
+app.use(logger);
 app.use(express.json());
 app.use(cors());
 

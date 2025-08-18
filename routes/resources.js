@@ -65,7 +65,7 @@ router.post('/', validateResource, async (req, res, next) => {
     const newResource = {
         id: uuidv4(),
         ...newResourceData,
-        createdAt: formatISO(new Date())
+        createdAt: new Date().toISOString()
     }
 
     try {
@@ -146,7 +146,7 @@ router.post('/:resourceId/ratings', async (req, res, next) => {
         resourceId: resourceId,
         ratingValue: ratingValue,
         userId: userId ? userId : 'anonymous', 
-        timestamp: new formatISO(new Date()) 
+        timestamp: new Date().toISOString()
     };
 
     try {
@@ -175,7 +175,7 @@ router.post('/:resourceId/feedback', async (req, res, next) => {
         resourceId: resourceId, 
         feedbackText: feedbackText.trim(), 
         userId: userId ? userId:  'anonymous', 
-        timestamp: formatISO(new Date())
+        timestamp: new Date().toISOString()
     };
 
     try {
@@ -212,7 +212,7 @@ router.put('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
         feedback[feedbackIndex] = {
             ...feedback[feedbackIndex], 
             feedbackText: feedbackText.trim(), 
-            timestamp: formatISO(new Date())
+            timestamp: new Date().toISOString()
         };
 
         await writeData(FEEDBACK_FILE, feedback);
