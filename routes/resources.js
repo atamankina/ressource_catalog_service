@@ -26,7 +26,7 @@ router.get('/', async (req, res, next) => {
             filteredResources = resources.filter(r => r.authorId === authorId);
         }
 
-        res.json(filteredResources);
+        res.status(200).json(filteredResources);
     } catch (error) {
         next(error);
     }
@@ -50,7 +50,7 @@ router.get('/:id', async (req, res, next) => {
 
         if (resource) {
             resource.averageRating = averageRating;
-            res.json(resource);
+            res.status(200).json(resource);
         } else {
             res.status(404).json({ error: `Ressource mit ID ${resourceId} nicht gefunden.` });
         }
@@ -79,8 +79,7 @@ router.post('/', validateResource, async (req, res, next) => {
 });
 
 
-router.put('/:id', (req, res, next) => {
-    // 1. ID auslesen
+router.put('/:id', async (req, res, next) => {
     const resourceId = req.params.id;
     const newData = req.body; 
     
@@ -90,40 +89,32 @@ router.put('/:id', (req, res, next) => {
     }
 
     try {
-        // 2. Alle Ressourcen laden
-        const data = readFileSync(DATA_FILE, 'utf8');
+        const data = await readData(DATA_FILE);
         const resources = JSON.parse(data);
 
-        // 3. Die Ressource nach der ID suchen
-        // const resource = resources.find(r => r.id === resourceId);
         const resourceIndex = resources.findIndex(r => r.id === resourceId);
 
-        // 4. Wenn die Ressource nicht existiert - dann 404
         if (resourceIndex === -1) {
             res.status(404).json({ error: `Ressource mit ID ${resourceId} nicht gefunden.`});
             return;
         }
 
-        // 5. Wenn die Ressource existiert - updaten
         resources[resourceIndex] = {...resources[resourceIndex], ...newData};
 
-        // 6. Updates in der Datei speichern.
-        writeFileSync(DATA_FILE, JSON.stringify(resources, null, 2), 'utf8');
+        await writeData(DATA_FILE, resources);
 
         res.status(200).json(resources[resourceIndex]);
-
     } catch(error) {
         next(error);
     }
 });
 
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {
     const resourceId = req.params.id;
 
     try {
-        const data = readFileSync(DATA_FILE, 'utf8');
-        let resources = JSON.parse(data);
+        const resources = await readData(DATA_FILE);
         const initialLength = resources.length;
         resources = resources.filter(r => r.id !== resourceId);
 
@@ -132,17 +123,16 @@ router.delete('/:id', (req, res, next) => {
             return;
         }
 
-        writeFileSync(DATA_FILE, JSON.stringify(resources, null, 2), 'utf8');
+        await writeData(DATA_FILE, resources);
 
         res.status(204).end();
-
     } catch (error) {
         next(error);
     }
 });
 
 
-router.post('/:resourceId/ratings', (req, res, next) => {
+router.post('/:resourceId/ratings', async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const { ratingValue, userId } = req.body;
 
@@ -155,27 +145,23 @@ router.post('/:resourceId/ratings', (req, res, next) => {
         id: uuidv4(), 
         resourceId: resourceId,
         ratingValue: ratingValue,
-        userId: userId || 'anonymous', 
-        timestamp: new Date().toISOString() 
+        userId: userId ? userId : 'anonymous', 
+        timestamp: new formatISO(new Date()) 
     };
 
     try {
-        const data = readFileSync(RATINGS_FILE, 'utf8');
-        const ratings = JSON.parse(data);
-
+        const ratings = await readData(RATINGS_FILE);       
         ratings.push(newRating);
-
-        writeFileSync(RATINGS_FILE, JSON.stringify(ratings, null, 2), 'utf8');
+        await writeData(RATINGS_FILE, ratings);
 
         res.status(201).json(newRating);
-
     } catch (error) {
         next(error); 
     }
 });
 
 
-router.post('/:resourceId/feedback', (req, res, next) => {
+router.post('/:resourceId/feedback', async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const { feedbackText, userId } = req.body;
 
@@ -188,24 +174,23 @@ router.post('/:resourceId/feedback', (req, res, next) => {
         id: uuidv4(), 
         resourceId: resourceId, 
         feedbackText: feedbackText.trim(), 
-        userId: userId || 'anonymous', 
-        timestamp: new Date().toISOString() 
+        userId: userId ? userId:  'anonymous', 
+        timestamp: formatISO(new Date())
     };
 
     try {
-        const data = readFileSync(FEEDBACK_FILE, 'utf8');
-        const feedback = JSON.parse(data);
+        const feedback = await readData(FEEDBACK_FILE);
         feedback.push(newFeedback);
-        writeFileSync(FEEDBACK_FILE, JSON.stringify(feedback, null, 2), 'utf8');
-        res.status(201).json(newFeedback);
+        await writeData(FEEDBACK_FILE, feedback);
 
+        res.status(201).json(newFeedback);
     } catch (error) {
         next(error);
     }
 });
 
 
-router.put('/:resourceId/feedback/:feedbackId', (req, res, next) => {
+router.put('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const feedbackId = req.params.feedbackId;
     const { feedbackText } = req.body;
@@ -216,8 +201,7 @@ router.put('/:resourceId/feedback/:feedbackId', (req, res, next) => {
     }
 
     try {
-        const data = readFileSync(FEEDBACK_FILE, 'utf8');
-        let feedback = JSON.parse(data);
+        let feedback = await readData(FEEDBACK_FILE);
         const feedbackIndex = feedback.findIndex(f => f.id === feedbackId && f.resourceId === resourceId);
         
         if (feedbackIndex === -1) {
@@ -228,25 +212,24 @@ router.put('/:resourceId/feedback/:feedbackId', (req, res, next) => {
         feedback[feedbackIndex] = {
             ...feedback[feedbackIndex], 
             feedbackText: feedbackText.trim(), 
-            timestamp: new Date().toISOString() 
+            timestamp: formatISO(new Date())
         };
 
-        writeFileSync(FEEDBACK_FILE, JSON.stringify(feedback, null, 2), 'utf8');
+        await writeData(FEEDBACK_FILE, feedback);
+
         res.status(200).json(feedback[feedbackIndex]);
         } catch (error) {
         next(error);
     }
-
 });
 
 
-router.delete('/:resourceId/feedback/:feedbackId', (req, res, next) => {
+router.delete('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const feedbackId = req.params.feedbackId;
 
     try {
-        const data = readFileSync(FEEDBACK_FILE, 'utf8');
-        let feedback = JSON.parse(data);
+        const feedback = await readData(FEEDBACK_FILE);
         const initialLength = feedback.length;
         feedback = feedback.filter(f => !(f.id === feedbackId && f.resourceId === resourceId));
 
@@ -255,13 +238,13 @@ router.delete('/:resourceId/feedback/:feedbackId', (req, res, next) => {
             return;
         }
 
-        writeFileSync(FEEDBACK_FILE, JSON.stringify(feedback, null, 2), 'utf8');
+        await writeData(FEEDBACK_FILE, feedback);
+
         res.status(204).end();
         } catch (error) {
         next(error);
     }
 });
-
 
 
 export default router;
