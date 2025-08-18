@@ -5,5 +5,12 @@
     "feedbackText": "Dieser Kurs ist nach der Aktualisierung noch besser geworden!",
     "userId": "user_alice",
     "timestamp": "2025-08-08T09:15:32.265Z"
+  },
+  {
+    "id": "93c5aa61-db6b-4186-b31a-b12141b42de4",
+    "resourceId": "2",
+    "feedbackText": "Aktualisiertes und sehr nützliches Feedback zu dieser Ressource. Es ist nun länger.",
+    "userId": "user456",
+    "timestamp": "2025-08-18T20:01:19.384Z"
   }
 ]

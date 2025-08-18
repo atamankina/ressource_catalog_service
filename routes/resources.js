@@ -1,6 +1,6 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { validateResource } from '../middleware/validation.js';
+import { validateResource, validateRating, validateFeedback } from '../middleware/validation.js';
 import { readData, writeData } from '../helpers/data_manager.js';
 
 const router = express.Router();
@@ -62,6 +62,7 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', validateResource, async (req, res, next) => {
     const newResourceData = req.body;
+
     const newResource = {
         id: uuidv4(),
         ...newResourceData,
@@ -132,14 +133,9 @@ router.delete('/:id', async (req, res, next) => {
 });
 
 
-router.post('/:resourceId/ratings', async (req, res, next) => {
+router.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const { ratingValue, userId } = req.body;
-
-    if (!ratingValue || ratingValue < 1 || ratingValue > 5 || !Number.isInteger(ratingValue)) {
-        res.status(400).json({ error: 'Bewertung muss eine ganze Zahl zwischen 1 und 5 sein.' });
-        return;
-    }
 
     const newRating = {
         id: uuidv4(), 
@@ -161,14 +157,9 @@ router.post('/:resourceId/ratings', async (req, res, next) => {
 });
 
 
-router.post('/:resourceId/feedback', async (req, res, next) => {
+router.post('/:resourceId/feedback', validateFeedback, async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const { feedbackText, userId } = req.body;
-
-    if (!feedbackText || feedbackText.trim().length < 10 || feedbackText.trim().length > 500) {
-        res.status(400).json({ error: 'Feedback-Text muss zwischen 10 und 500 Zeichen lang sein.' });
-        return;
-    }
 
     const newFeedback = {
         id: uuidv4(), 
@@ -190,15 +181,10 @@ router.post('/:resourceId/feedback', async (req, res, next) => {
 });
 
 
-router.put('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
+router.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, res, next) => {
     const resourceId = req.params.resourceId;
     const feedbackId = req.params.feedbackId;
     const { feedbackText } = req.body;
-
-    if (!feedbackText || feedbackText.trim().length < 10 || feedbackText.trim().length > 500) {
-        res.status(400).json({ error: 'Aktualisierter Feedback-Text muss zwischen 10 und 500 Zeichen lang sein.' });
-        return;
-    }
 
     try {
         let feedback = await readData(FEEDBACK_FILE);

@@ -19,5 +19,12 @@
     "ratingValue": 3,
     "userId": "user_xyz",
     "timestamp": "2025-08-07T15:20:19.345Z"
+  },
+  {
+    "id": "85d9d059-4f9a-470e-8cd2-8b9d8e79cae9",
+    "resourceId": "2",
+    "ratingValue": 4,
+    "userId": "user123",
+    "timestamp": "2025-08-18T19:57:28.875Z"
   }
 ]

@@ -31,5 +31,12 @@
     "title": "Einführung in Python",
     "type": "Kurs",
     "url": "http://example.com/python"
+  },
+  {
+    "id": "1b8c6074-2174-4457-a963-a6bfbad178d1",
+    "title": "Neues Tutorial",
+    "type": "Video",
+    "url": "http://example.com/video1",
+    "createdAt": "2025-08-18T19:56:19.845Z"
   }
 ]
