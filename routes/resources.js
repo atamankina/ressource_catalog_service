@@ -44,6 +44,7 @@ router.get('/', async (req, res, next) => {
 
         res.status(200).json(filteredResources);
     } catch (error) {
+        console.error('Fehler beim Abrufen aller Ressourcen:', error);
         next(error);
     }
 });
@@ -81,6 +82,7 @@ router.get('/:id', async (req, res, next) => {
             res.status(404).json({ error: `Ressource mit ID ${resourceId} nicht gefunden.` });
         }
     } catch (error) {
+        console.error(`Fehler beim Abrufen der Ressource mit ID ${req.params.id}:`, error);
         next(error);
     }
 });
@@ -112,6 +114,7 @@ router.post('/', validateResource, async (req, res, next) => {
         await writeData(RESOURCES_FILE, resources);
         res.status(201).json(newResource);
     } catch (error) {
+        console.error('Fehler beim Erstellen einer Ressource:', error);
         next(error);
     }
 });
@@ -156,6 +159,7 @@ router.put('/:id', async (req, res, next) => {
 
         res.status(200).json(resources[resourceIndex]);
     } catch(error) {
+        console.error(`Fehler beim Aktualisieren der Ressource mit ID ${req.params.id}:`, error);
         next(error);
     }
 });
@@ -188,6 +192,7 @@ router.delete('/:id', async (req, res, next) => {
 
         res.status(204).end();
     } catch (error) {
+        console.error(`Fehler beim Löschen der Ressource mit ID ${req.params.id}:`, error);
         next(error);
     }
 });
@@ -224,6 +229,7 @@ router.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
 
         res.status(201).json(newRating);
     } catch (error) {
+        console.error(`Fehler beim Hinzufügen einer Bewertung für Ressource ${req.params.resourceId}:`, error);
         next(error); 
     }
 });
@@ -260,6 +266,7 @@ router.post('/:resourceId/feedback', validateFeedback, async (req, res, next) =>
 
         res.status(201).json(newFeedback);
     } catch (error) {
+        console.error(`Fehler beim Hinzufügen von Feedback für Ressource ${req.params.resourceId}:`, error);
         next(error);
     }
 });
@@ -303,6 +310,7 @@ router.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, re
 
         res.status(200).json(feedback[feedbackIndex]);
         } catch (error) {
+        console.error(`Fehler beim Aktualisieren von Feedback ${req.params.feedbackId} für Ressource ${req.params.resourceId}:`, error);
         next(error);
     }
 });
@@ -338,6 +346,7 @@ router.delete('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
 
         res.status(204).end();
         } catch (error) {
+        console.error(`Fehler beim Löschen von Feedback ${req.params.feedbackId} für Ressource ${req.params.resourceId}:`, error);
         next(error);
     }
 });
