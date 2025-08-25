@@ -35,11 +35,11 @@ router.get('/', async (req, res, next) => {
         let filteredResources = resources;
 
         if (type) {
-            filteredResources = resources.filter(r => r.type === type);
+            filteredResources = resources.filter(r => String(r.type) === String(type));
         }
 
         if (authorId) {
-            filteredResources = resources.filter(r => r.authorId === authorId);
+            filteredResources = resources.filter(r => String(r.authorId) === String(authorId));
         }
 
         res.status(200).json(filteredResources);
@@ -66,12 +66,12 @@ router.get('/:id', async (req, res, next) => {
         const resources = await readData(RESOURCES_FILE);
         const ratings = await readData(RATINGS_FILE);
         
-        const resource = resources.find(r => r.id === resourceId);
-        const resourceRatings = ratings.filter(rating => rating.resourceId === resourceId);
+        const resource = resources.find(r => String(r.id) === resourceId);
+        const resourceRatings = ratings.filter(rating => String(rating.resourceId) === resourceId);
 
         let averageRating = 0;
         if (resourceRatings.length > 0) {
-            const sumOfRatings = resourceRatings.reduce((sum, rating) => sum + rating.ratingValue, 0);
+            const sumOfRatings = resourceRatings.reduce((sum, rating) => sum + Number(rating.ratingValue), 0);
             averageRating = sumOfRatings / resourceRatings.length;
         }
 
@@ -218,7 +218,7 @@ router.post('/:resourceId/ratings', validateRating, async (req, res, next) => {
         id: uuidv4(), 
         resourceId: resourceId,
         ratingValue: ratingValue,
-        userId: userId ? userId : 'anonymous', 
+        userId: userId ? String(userId) : 'anonymous', 
         timestamp: new Date().toISOString()
     };
 
@@ -255,7 +255,7 @@ router.post('/:resourceId/feedback', validateFeedback, async (req, res, next) =>
         id: uuidv4(), 
         resourceId: resourceId, 
         feedbackText: feedbackText.trim(), 
-        userId: userId ? userId:  'anonymous', 
+        userId: userId ? String(userId):  'anonymous', 
         timestamp: new Date().toISOString()
     };
 
@@ -293,7 +293,7 @@ router.put('/:resourceId/feedback/:feedbackId', validateFeedback, async (req, re
 
     try {
         let feedback = await readData(FEEDBACK_FILE);
-        const feedbackIndex = feedback.findIndex(f => f.id === feedbackId && f.resourceId === resourceId);
+        const feedbackIndex = feedback.findIndex(f => String(f.id) === feedbackId && String(f.resourceId) === resourceId);
         
         if (feedbackIndex === -1) {
             res.status(404).json({ error: `Feedback mit ID ${feedbackId} für Ressource ${resourceId} nicht gefunden.` });
@@ -335,7 +335,7 @@ router.delete('/:resourceId/feedback/:feedbackId', async (req, res, next) => {
     try {
         const feedback = await readData(FEEDBACK_FILE);
         const initialLength = feedback.length;
-        feedback = feedback.filter(f => !(f.id === feedbackId && f.resourceId === resourceId));
+        feedback = feedback.filter(f => !(String(f.id) === feedbackId && String(f.resourceId) === resourceId));
 
         if (feedback.length === initialLength) {
             res.status(404).json({ error: `Feedback mit ID ${feedbackId} für Ressource ${resourceId} nicht gefunden.` });
